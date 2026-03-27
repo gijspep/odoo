@@ -1,0 +1,38 @@
+<odoo>
+    <menuitem id="estate_menu_root" name="Real Estate" />
+
+    <menuitem
+        id="estate_first_level_menu_1"
+        name="Properties"
+        parent="estate_menu_root"
+    />
+
+    <menuitem
+        id="estate_property_menu_record_action"
+        name="Records"
+        parent="estate_first_level_menu_1"
+        action="estate_property_records_action"
+    />
+    <menuitem
+        id="estate_first_level_menu_2"
+        name="Settings"
+        parent="estate_menu_root"
+        groups="estate.estate_group_user"
+    />
+
+    <menuitem
+        id="estate_property_menu_property_type_action"
+        name="Property Types"
+        parent="estate_first_level_menu_2"
+        action="estate_property_type_action"
+        groups="estate.estate_group_manager"
+    />
+
+    <menuitem
+        id="estate_property_menu_user_extension_action"
+        name="Users"
+        parent="estate_first_level_menu_2"
+        action="estate_users_extension_action"
+    />
+
+</odoo>

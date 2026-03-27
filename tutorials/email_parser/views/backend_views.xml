@@ -1,0 +1,228 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <!-- ── parser.api_key views (read-only — no sensitive fields exposed) ── -->
+    <record id="view_parser_api_key_list" model="ir.ui.view">
+        <field name="name">parser.api_key.list</field>
+        <field name="model">parser.api_key</field>
+        <field name="arch" type="xml">
+            <list create="false" edit="false">
+                <field name="key_name" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_parser_api_key_form" model="ir.ui.view">
+        <field name="name">parser.api_key.form</field>
+        <field name="model">parser.api_key</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="key_name" readonly="1" />
+                    </group>
+                    <p style="color: #888; font-size: 0.85em;">
+                        The encrypted key, salt, and nonce are stored but not displayed here.
+                        Use <strong>Set API Key</strong> to replace the key.
+                    </p>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parser_api_key" model="ir.actions.act_window">
+        <field name="name">API Keys</field>
+        <field name="res_model">parser.api_key</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ── Set Key wizard ─────────────────────────────────────────────────── -->
+    <record id="view_parser_set_key_wizard_form" model="ir.ui.view">
+        <field name="name">parser.set_key.wizard.form</field>
+        <field name="model">parser.set_key.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Set API Key">
+                <sheet>
+                    <group>
+                        <field name="key_name" />
+                        <field
+                            name="raw_key_hex"
+                            password="True"
+                            string="AES Key (hex)"
+                        />
+                        <field name="password" password="True" />
+                        <field name="confirm_password" password="True" />
+                    </group>
+                </sheet>
+                <footer>
+                    <button
+                        name="action_save_key"
+                        string="Save Key"
+                        type="object"
+                        class="btn-primary"
+                    />
+                    <button
+                        string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"
+                    />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parser_set_key_wizard" model="ir.actions.act_window">
+        <field name="name">Set API Key</field>
+        <field name="res_model">parser.set_key.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ── parser.extraction views ────────────────────────────────────────── -->
+    <record id="view_parser_extraction_list" model="ir.ui.view">
+        <field name="name">parser.extraction.list</field>
+        <field name="model">parser.extraction</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="job_id" />
+                <field name="subject" />
+                <field name="email_from" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_parser_extraction_form" model="ir.ui.view">
+        <field name="name">parser.extraction.form</field>
+        <field name="model">parser.extraction</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="job_id" readonly="1" />
+                        <field name="subject" readonly="1" />
+                        <field name="email_from" readonly="1" />
+                    </group>
+                    <notebook>
+                        <page string="Nominations">
+                            <field name="nominations" readonly="1">
+                                <list>
+                                    <field name="nomination_type" />
+                                    <field name="arrival_date" />
+                                    <field name="transporter" />
+                                    <field name="sender" />
+                                    <field name="receiver" />
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Summaries">
+                            <group>
+                                <field name="nominations_summary" />
+                                <field name="companies_summary" />
+                            </group>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parser_extraction" model="ir.actions.act_window">
+        <field name="name">Extractions</field>
+        <field name="res_model">parser.extraction</field>
+        <field name="view_mode">list,form</field>
+        <field name="path">parser-extractions</field>
+    </record>
+
+    <!-- ── parser.nomination views ────────────────────────────────────────── -->
+    <record id="view_parser_nomination_form" model="ir.ui.view">
+        <field name="name">parser.nomination.form</field>
+        <field name="model">parser.nomination</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <group string="Details">
+                            <field name="nomination_type" />
+                            <field name="arrival_date" />
+                            <field name="transporter" />
+                            <field name="sender" />
+                            <field name="receiver" />
+                            <field name="agent" />
+                        </group>
+                        <group string="Survey">
+                            <field name="sample_required" />
+                            <field name="inspection_before" />
+                            <field name="inspection_after" />
+                            <field name="certificate_of_analysis" />
+                        </group>
+                    </group>
+                    <notebook>
+                        <page string="Product Transfers">
+                            <field name="product_transfers" readonly="1">
+                                <list>
+                                    <field name="product_name" />
+                                    <field name="amount" />
+                                    <field name="unit_of_measurement" />
+                                    <field name="customs_type" />
+                                    <field name="country_of_origin" />
+                                    <field name="source_modality" />
+                                    <field name="destination_modality" />
+                                </list>
+                            </field>
+                        </page>
+                        <page string="References">
+                            <field name="references" readonly="1">
+                                <list>
+                                    <field name="label" />
+                                    <field name="value" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parser_nomination" model="ir.actions.act_window">
+        <field name="name">Nominations</field>
+        <field name="res_model">parser.nomination</field>
+        <field name="view_mode">list,form</field>
+        <field name="path">parser-nominations</field>
+    </record>
+
+    <!-- ── Menus ──────────────────────────────────────────────────────────── -->
+    <menuitem id="menu_email_parser_root" name="Email Parser" sequence="50" />
+
+    <menuitem
+        id="menu_email_parser_extractions"
+        name="Extractions"
+        parent="menu_email_parser_root"
+        action="action_parser_extraction"
+        sequence="5"
+    />
+
+    <menuitem
+        id="menu_email_parser_config"
+        name="Configuration"
+        parent="menu_email_parser_root"
+        sequence="10"
+    />
+
+    <menuitem
+        id="menu_parser_api_keys"
+        name="API Keys"
+        parent="menu_email_parser_config"
+        action="action_parser_api_key"
+        sequence="10"
+        groups="base.group_system"
+    />
+
+    <menuitem
+        id="menu_parser_set_key"
+        name="Set API Key"
+        parent="menu_email_parser_config"
+        action="action_parser_set_key_wizard"
+        sequence="20"
+        groups="base.group_system"
+    />
+</odoo>

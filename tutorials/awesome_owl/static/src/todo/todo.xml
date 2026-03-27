@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="awesome_owl.todo_item">
+        <div
+            class="d-flex w-100 gap-2 mb-2 p-2 border rounded align-items-center"
+        >
+            <input
+                type="checkbox"
+                class="form-check-input m-0"
+                t-att-checked="props.isCompleted"
+                t-on-change="toggleCompleted"
+            />
+            <span><t t-esc="props.id" /></span>
+            <span
+                class="fw-bold"
+                t-att-class="{ 'text-muted text-decoration-line-through': props.isCompleted }"
+            >
+                <t t-esc="props.description" />
+            </span>
+            <span class="fa fa-remove" t-on-click="remove" />
+        </div>
+    </t>
+
+    <t t-name="awesome_owl.todo_list">
+        <div class="todo-list-container">
+            <input
+                type="text"
+                t-ref="todo_list_input"
+                class="form-control mb-3"
+                placeholder="Enter a new task and press Enter..."
+                t-on-keyup="addToTodoList"
+            />
+            <!-- t-foreach creates an index var for t-as accesible by t_as_index -->
+            <!-- in this case todo_index -->
+            <t t-foreach="state.todos" t-as="todo" t-key="todo.id">
+                <TodoItem
+                    id="todo_index"
+                    description="todo.description"
+                    isCompleted="todo.isCompleted"
+                    onToggle="() => this.toggleTodo(todo.id)"
+                    onRemove="() => this.removeTodo(todo.id)"
+                />
+
+            </t>
+        </div>
+    </t>
+
+</templates>

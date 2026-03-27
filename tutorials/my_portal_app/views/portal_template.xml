@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template id="standalone_portal_template" name="My Standalone Portal">
+        <html>
+            <head>
+                <title>My Application Portal</title>
+                <meta charset="utf-8" />
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        background-color: #f4f4f9;
+                        display: flex;
+                        justify-content: center;
+                        align-items: center;
+                        height: 100vh;
+                        margin: 0;
+                    }
+                    .portal-container {
+                        background: white;
+                        padding: 40px;
+                        border-radius: 8px;
+                        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+                        text-align: center;
+                    }
+                    .btn-start {
+                        display: inline-block;
+                        margin-top: 20px;
+                        padding: 10px 20px;
+                        background-color: #714B67; /* Odoo Purple */
+                        color: white;
+                        text-decoration: none;
+                        border-radius: 5px;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="portal-container">
+                    <h1>Welcome to My Isolated Portal!</h1>
+                    <p
+                    >This page is running on Odoo, but lives entirely in its own ecosystem.</p>
+                    <a href="#" class="btn-start">Get Started</a>
+                </div>
+            </body>
+        </html>
+    </template>
+</odoo>

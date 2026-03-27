@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="awesome_owl.playground">
+        <div class="container mt-4">
+            <div class="d-flex gap-4 mt-3 align-items-start">
+                <Card title="'Counter 1'">
+                    <t t-set-slot="object">
+                        <Counter onChange="(delta) => this.updateSum(delta)" />
+                    </t>
+                </Card>
+
+                <Card title="'Counter 2'">
+                    <t t-set-slot="object">
+                        <Counter onChange="(delta) => this.updateSum(delta)" />
+                    </t>
+                </Card>
+            </div>
+            <div>
+                <Card title="'Total Sum'">
+                    <t t-set-slot="object">
+                        <t t-esc="state.sum" />
+                    </t>
+                </Card>
+            </div>
+
+            <div>
+                <Card title="'Todo List'">
+                    <t t-set-slot="object">
+                        <TodoList
+                            todos="state.todos"
+                            addTodo="(text) => this.addTodo(text)"
+                        />
+                    </t>
+                </Card>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

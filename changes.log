@@ -1,0 +1,27 @@
+install additional build dependencies, they will be listed in error log during build of pip wheels.
+
+using UV, which has it's own dependency checker.
+
+in requirements.txt change:
+    greenlet==3.1.1 to greenlet>=3.1.1
+
+in odoo/tools/misc.py
+    add:
+    copy method
+        def copy(self):
+            return self.__class__(self)
+
+    to
+        class OrderedSet(MutableSet[T], typing.Generic[T])
+
+in odoo/tools/safe_eval.py
+    add:
+        "LOAD_SMALL_INT", to _EXPR_OPCODES
+        "NOT_TAKEN", to _EXPR_OPCODES
+
+then run:
+    python odoo-bin --addons-path=<addons-path> -d <your-db-name> -i base,web
+
+
+and go to:
+    http://localhost:8069/

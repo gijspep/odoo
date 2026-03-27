@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<templates xml:space="preserve">
+
+    <t t-name="awesome_dashboard.item" size="props.size">
+        <div
+            class="card d-inline-block m-2 shadow-sm"
+            t-attf-style="width: {{ 18 * props.size }}rem; vertical-align: top;"
+        >
+
+            <div
+                class="card-header d-flex justify-content-between align-items-center bg-light"
+            >
+                <h5 class="card-title mb-0">
+                    <t t-esc="props.title" />
+                </h5>
+                <button
+                    class="btn btn-sm btn-outline-secondary"
+                    t-on-click="close"
+                >
+                    <i
+                        t-attf-class="fa #{state.isVisible ? 'fa-minus' : 'fa-plus'}"
+                    />
+                </button>
+            </div>
+
+            <div t-attf-class="card-body #{state.isVisible ? '' : 'd-none'}">
+                <p class="card-text">
+                    <t t-slot="object" />
+                </p>
+            </div>
+
+        </div>
+    </t>
+
+</templates>

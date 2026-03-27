@@ -1,0 +1,39 @@
+<odoo>
+<record id="groups_privilege_real_estate" model="res.groups.privilege">
+    <field name="name">Real Estate</field>
+    <field
+            name="category_id"
+            ref="base.module_category_real_estate_brokerage"
+        />
+</record>
+
+<record id="estate_group_user" model="res.groups">
+        <field name="name">Agent</field>
+        <field name="privilege_id" ref="groups_privilege_real_estate" />
+</record>
+
+<record id="estate_group_manager" model="res.groups">
+    <field name="name">Manager</field>
+    <field name="privilege_id" ref="groups_privilege_real_estate" />
+    <field name="implied_ids" eval="[Command.link(ref('estate_group_user'))]" />
+</record>
+
+<record id="estate_property_agent_visibility_rule" model="ir.rule">
+    <field name="name">Agent Property Access</field>
+    <field name="model_id" ref="model_estate_property" />
+    <field name="groups" eval="[Command.link(ref('estate_group_user'))]" />
+    <field name="perm_read" eval="True" />
+    <field
+            name="domain_force"
+        >['|', ('salesperson', '=', user.id), ('salesperson', '=', False)]
+    </field>
+</record>
+
+<record id="estate_property_manager_access_rule" model="ir.rule">
+    <field name="name">Manager Property Access</field>
+    <field name="model_id" ref="model_estate_property" />
+    <field name="groups" eval="[Command.link(ref('estate_group_manager'))]" />
+    <field name="domain_force">[(1, '=', 1)]</field>
+</record>
+
+</odoo>

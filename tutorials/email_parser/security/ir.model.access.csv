@@ -1,0 +1,11 @@
+id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
+access_parser_api_key,access_parser_api_key,model_parser_api_key,base.group_system,1,1,1,1
+access_parser_set_key_wizard,access_parser_set_key_wizard,model_parser_set_key_wizard,base.group_system,1,1,1,1
+access_parser_unlock_wizard,access_parser_unlock_wizard,model_parser_unlock_wizard,base.group_system,1,1,1,1
+access_parser_extraction,access_parser_extraction,model_parser_extraction,base.group_user,1,1,1,1
+access_parser_company,access_parser_company,model_parser_company,base.group_user,1,1,1,1
+access_parser_modality,access_parser_modality,model_parser_modality,base.group_user,1,1,1,1
+access_parser_nomination,access_parser_nomination,model_parser_nomination,base.group_user,1,1,1,1
+access_parser_prev_cargo,access_parser_prev_cargo,model_parser_previous_cargo,base.group_user,1,1,1,1
+access_parser_prod_trans,access_parser_prod_trans,model_parser_product_transfer,base.group_user,1,1,1,1
+access_parser_ref_item,access_parser_ref_item,model_parser_reference_item,base.group_user,1,1,1,1

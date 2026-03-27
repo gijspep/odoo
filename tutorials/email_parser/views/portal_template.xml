@@ -1,0 +1,1068 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<odoo>
+    <template
+        id="standalone_portal_template"
+        name="Email Parser — Job Submission"
+    >
+        <html>
+            <head>
+                <title>Email Parser</title>
+                <meta charset="utf-8" />
+                <meta
+                    name="viewport"
+                    content="width=device-width, initial-scale=1.0"
+                />
+                <style>
+                    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+                    body {
+                        font-family: system-ui, -apple-system, sans-serif;
+                        background: #0f1117;
+                        color: #e2e8f0;
+                        min-height: 100vh;
+                    }
+
+                    p { font-size: 0.9rem; color: #64748b; line-height: 1.6; }
+
+                    /* ── Centered layout (no-key / unlock states) ── */
+                    .centered-layout {
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        padding: 48px 24px;
+                        gap: 32px;
+                        min-height: 100vh;
+                    }
+
+                    .centered-layout h1 {
+                        font-size: 1.5rem;
+                        font-weight: 600;
+                        letter-spacing: -0.02em;
+                        color: #f8fafc;
+                    }
+
+                    /* ── App layout (unlocked state) ── */
+                    .app-layout {
+                        display: flex;
+                        min-height: 100vh;
+                    }
+
+                    /* ── Sidebar ── */
+                    .sidebar {
+                        width: 192px;
+                        background: #0d1117;
+                        border-right: 1px solid #1e293b;
+                        display: flex;
+                        flex-direction: column;
+                        flex-shrink: 0;
+                        position: sticky;
+                        top: 0;
+                        height: 100vh;
+                    }
+
+                    .sidebar-brand {
+                        font-size: 0.78rem;
+                        font-weight: 600;
+                        color: #475569;
+                        text-transform: uppercase;
+                        letter-spacing: 0.08em;
+                        padding: 28px 20px 20px;
+                        border-bottom: 1px solid #1e293b;
+                    }
+
+                    .nav-list { list-style: none; padding: 8px 0; }
+
+                    .nav-item {
+                        display: flex;
+                        align-items: center;
+                        padding: 9px 20px;
+                        font-size: 0.88rem;
+                        color: #64748b;
+                        cursor: pointer;
+                        transition: color 0.12s, background 0.12s;
+                        border-left: 2px solid transparent;
+                        user-select: none;
+                    }
+
+                    .nav-item:hover { color: #cbd5e1; background: #111827; }
+
+                    .nav-item.active {
+                        color: #e2e8f0;
+                        background: #161b27;
+                        border-left-color: #6366f1;
+                    }
+
+                    /* ── Main content ── */
+                    .main {
+                        flex: 1;
+                        display: flex;
+                        flex-direction: column;
+                        align-items: center;
+                        padding: 48px 32px;
+                        gap: 24px;
+                        overflow-y: auto;
+                    }
+
+                    .view-title {
+                        width: 100%;
+                        max-width: 600px;
+                        font-size: 1.25rem;
+                        font-weight: 600;
+                        color: #f1f5f9;
+                        letter-spacing: -0.01em;
+                    }
+
+                    /* ── Views ── */
+                    .view { display: none; width: 100%; max-width: 600px; flex-direction: column; gap: 16px; }
+                    .view.active { display: flex; }
+
+                    /* ── Unlock / no-key cards ── */
+                    .card {
+                        width: 100%;
+                        max-width: 400px;
+                        background: #161b27;
+                        border: 1px solid #1e293b;
+                        border-radius: 16px;
+                        padding: 36px 32px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 20px;
+                    }
+
+                    .card h2 { font-size: 1.1rem; font-weight: 600; color: #f1f5f9; }
+
+                    .field-group { display: flex; flex-direction: column; gap: 6px; }
+
+                    .field-group label {
+                        font-size: 0.78rem;
+                        font-weight: 500;
+                        color: #94a3b8;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                    }
+
+                    .field-group input[type="password"] {
+                        background: #0d1117;
+                        border: 1px solid #334155;
+                        border-radius: 8px;
+                        padding: 10px 14px;
+                        color: #e2e8f0;
+                        font-size: 0.9rem;
+                        outline: none;
+                        transition: border-color 0.15s;
+                        width: 100%;
+                    }
+
+                    .field-group input[type="password"]:focus { border-color: #6366f1; }
+
+                    .error-msg {
+                        font-size: 0.82rem;
+                        color: #f87171;
+                        background: #450a0a;
+                        border-radius: 6px;
+                        padding: 8px 12px;
+                    }
+
+                    .btn-primary {
+                        background: #6366f1;
+                        color: #fff;
+                        border: none;
+                        border-radius: 8px;
+                        padding: 10px 20px;
+                        font-size: 0.9rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: background 0.15s;
+                    }
+
+                    .btn-primary:hover { background: #4f46e5; }
+
+                    /* ── Drop zone ── */
+                    #drop-zone {
+                        width: 100%;
+                        border: 2px dashed #334155;
+                        border-radius: 16px;
+                        padding: 56px 32px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: border-color 0.15s, background 0.15s;
+                        background: #161b27;
+                    }
+
+                    #drop-zone.drag-over { border-color: #6366f1; background: #1e2235; }
+
+                    #drop-zone svg {
+                        width: 40px;
+                        height: 40px;
+                        margin-bottom: 16px;
+                        color: #475569;
+                        transition: color 0.15s;
+                    }
+
+                    #drop-zone.drag-over svg { color: #6366f1; }
+                    #drop-zone p strong { color: #94a3b8; }
+                    #file-input { display: none; }
+
+                    /* ── Job cards ── */
+                    .job-card {
+                        background: #161b27;
+                        border: 1px solid #1e293b;
+                        border-radius: 12px;
+                        padding: 18px 20px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 10px;
+                        animation: slide-in 0.2s ease;
+                    }
+
+                    @keyframes slide-in {
+                        from { opacity: 0; transform: translateY(-6px); }
+                        to   { opacity: 1; transform: translateY(0); }
+                    }
+
+                    .job-header { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+
+                    .job-filename {
+                        font-size: 0.85rem;
+                        font-weight: 500;
+                        color: #cbd5e1;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                        white-space: nowrap;
+                    }
+
+                    .job-status {
+                        font-size: 0.72rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        padding: 3px 10px;
+                        border-radius: 999px;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                    }
+
+                    .status-pending   { background: #1e3a5f; color: #60a5fa; }
+                    .status-success   { background: #14532d; color: #4ade80; }
+                    .status-error     { background: #450a0a; color: #f87171; }
+                    .status-uploading { background: #2d1b69; color: #a78bfa; }
+
+                    .job-id { font-size: 0.72rem; color: #475569; font-family: monospace; }
+
+                    .result-btn {
+                        background: none;
+                        border: none;
+                        color: #6366f1;
+                        font-size: 0.85rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        padding: 4px 0;
+                        text-align: left;
+                    }
+
+                    .result-btn:hover { color: #a5b4fc; text-decoration: underline; }
+
+                    .spinner {
+                        display: inline-block;
+                        width: 12px;
+                        height: 12px;
+                        border: 2px solid #334155;
+                        border-top-color: #6366f1;
+                        border-radius: 50%;
+                        animation: spin 0.7s linear infinite;
+                        flex-shrink: 0;
+                    }
+
+                    @keyframes spin { to { transform: rotate(360deg); } }
+
+                    .job-progress { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #64748b; }
+
+                    /* ── List views ── */
+                    .list-item {
+                        background: #161b27;
+                        border: 1px solid #1e293b;
+                        border-radius: 10px;
+                        padding: 14px 18px;
+                        cursor: pointer;
+                        transition: border-color 0.12s, background 0.12s;
+                    }
+
+                    .list-item:hover { border-color: #334155; background: #1a2033; }
+
+                    .list-item-title {
+                        font-size: 0.88rem;
+                        font-weight: 500;
+                        color: #cbd5e1;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
+                    }
+
+                    .list-item-meta { font-size: 0.75rem; color: #475569; margin-top: 3px; }
+
+                    .list-empty { font-size: 0.85rem; color: #475569; padding: 24px 0; text-align: center; }
+
+                    .list-loading { font-size: 0.85rem; color: #475569; padding: 24px 0; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+                    /* ── Modal ── */
+                    .modal-backdrop {
+                        position: fixed;
+                        inset: 0;
+                        background: rgba(0,0,0,0.65);
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: center;
+                        padding: 48px 16px;
+                        z-index: 1000;
+                        overflow-y: auto;
+                    }
+
+                    .modal {
+                        background: #161b27;
+                        border: 1px solid #1e293b;
+                        border-radius: 16px;
+                        width: 100%;
+                        max-width: 680px;
+                        display: flex;
+                        flex-direction: column;
+                        overflow: hidden;
+                        flex-shrink: 0;
+                    }
+
+                    .modal-header {
+                        display: flex;
+                        align-items: flex-start;
+                        justify-content: space-between;
+                        gap: 16px;
+                        padding: 24px 28px 20px;
+                        border-bottom: 1px solid #1e293b;
+                    }
+
+                    .modal-header-text { display: flex; flex-direction: column; gap: 4px; }
+                    .modal-header-text h2 { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
+                    .modal-header-text p  { font-size: 0.78rem; color: #64748b; }
+
+                    .modal-close {
+                        background: none;
+                        border: none;
+                        color: #475569;
+                        cursor: pointer;
+                        font-size: 1.2rem;
+                        line-height: 1;
+                        padding: 2px 4px;
+                        flex-shrink: 0;
+                    }
+
+                    .modal-close:hover { color: #94a3b8; }
+
+                    .modal-body { display: flex; flex-direction: column; gap: 12px; padding: 20px 28px 28px; }
+
+                    .nom-card {
+                        background: #0d1117;
+                        border: 1px solid #1e293b;
+                        border-radius: 10px;
+                        overflow: hidden;
+                    }
+
+                    .nom-summary {
+                        display: flex;
+                        align-items: center;
+                        justify-content: space-between;
+                        gap: 12px;
+                        padding: 14px 16px;
+                        cursor: pointer;
+                        user-select: none;
+                    }
+
+                    .nom-summary:hover { background: #111827; }
+
+                    .nom-summary-left { display: flex; flex-direction: column; gap: 3px; }
+                    .nom-ref  { font-size: 0.82rem; font-weight: 600; color: #cbd5e1; }
+                    .nom-meta { font-size: 0.75rem; color: #64748b; }
+
+                    .nom-badge {
+                        font-size: 0.68rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        padding: 2px 8px;
+                        border-radius: 999px;
+                        background: #1e3a5f;
+                        color: #60a5fa;
+                        white-space: nowrap;
+                        flex-shrink: 0;
+                    }
+
+                    .nom-chevron { color: #475569; transition: transform 0.15s; flex-shrink: 0; }
+                    .nom-card.open .nom-chevron { transform: rotate(90deg); }
+
+                    .nom-detail {
+                        display: none;
+                        padding: 0 16px 16px;
+                        flex-direction: column;
+                        gap: 12px;
+                    }
+
+                    .nom-card.open .nom-detail { display: flex; }
+
+                    .detail-section { display: flex; flex-direction: column; gap: 6px; }
+
+                    .detail-section-title {
+                        font-size: 0.7rem;
+                        font-weight: 600;
+                        text-transform: uppercase;
+                        letter-spacing: 0.06em;
+                        color: #475569;
+                        padding-bottom: 4px;
+                        border-bottom: 1px solid #1e293b;
+                    }
+
+                    .kv-grid {
+                        display: grid;
+                        grid-template-columns: max-content 1fr;
+                        gap: 4px 16px;
+                        font-size: 0.78rem;
+                    }
+
+                    .kv-key { color: #64748b; }
+                    .kv-val { color: #cbd5e1; }
+
+                    .pt-table { width: 100%; border-collapse: collapse; font-size: 0.75rem; }
+
+                    .pt-table th {
+                        text-align: left;
+                        color: #475569;
+                        font-weight: 500;
+                        padding: 4px 8px 4px 0;
+                        border-bottom: 1px solid #1e293b;
+                    }
+
+                    .pt-table td { color: #94a3b8; padding: 5px 8px 5px 0; vertical-align: top; }
+
+                    /* ── Instruct view ── */
+                    .instruct-form { display: flex; flex-direction: column; gap: 16px; }
+
+                    .form-label {
+                        font-size: 0.78rem;
+                        font-weight: 500;
+                        color: #94a3b8;
+                        text-transform: uppercase;
+                        letter-spacing: 0.05em;
+                        margin-bottom: 6px;
+                        display: block;
+                    }
+
+                    .body-input {
+                        background: #0d1117;
+                        border: 1px solid #334155;
+                        border-radius: 8px;
+                        padding: 12px 14px;
+                        color: #e2e8f0;
+                        font-size: 0.9rem;
+                        font-family: system-ui, -apple-system, sans-serif;
+                        outline: none;
+                        resize: vertical;
+                        min-height: 120px;
+                        transition: border-color 0.15s;
+                        width: 100%;
+                    }
+
+                    .body-input:focus { border-color: #6366f1; }
+
+                    .file-drop {
+                        border: 2px dashed #334155;
+                        border-radius: 12px;
+                        padding: 28px 32px;
+                        text-align: center;
+                        cursor: pointer;
+                        transition: border-color 0.15s, background 0.15s;
+                        background: #161b27;
+                        font-size: 0.85rem;
+                        color: #64748b;
+                    }
+
+                    .file-drop.drag-over { border-color: #6366f1; background: #1e2235; }
+                    .file-drop strong { color: #94a3b8; }
+                    #instruct-file-input { display: none; }
+
+                    .file-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+
+                    .file-chip {
+                        display: flex;
+                        align-items: center;
+                        gap: 6px;
+                        background: #1e293b;
+                        border-radius: 6px;
+                        padding: 4px 10px;
+                        font-size: 0.78rem;
+                        color: #94a3b8;
+                    }
+
+                    .file-chip-remove {
+                        background: none;
+                        border: none;
+                        color: #475569;
+                        cursor: pointer;
+                        padding: 0;
+                        font-size: 0.85rem;
+                        line-height: 1;
+                    }
+
+                    .file-chip-remove:hover { color: #f87171; }
+                </style>
+            </head>
+            <body>
+                <!-- ── No key configured ─────────────────────────────────── -->
+                <t t-if="not key_set">
+                    <div class="centered-layout">
+                        <h1>Email Parser</h1>
+                        <div class="card">
+                            <h2>No API key configured</h2>
+                            <p>An administrator must add an API key via
+                                <strong
+                                >Email Parser &gt; Configuration &gt; Set API Key</strong>
+                                in the Odoo backend before this portal can be used.
+                            </p>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ── Unlock form ───────────────────────────────────────── -->
+                <t t-elif="not key_unlocked">
+                    <div class="centered-layout">
+                        <h1>Email Parser</h1>
+                        <div class="card">
+                            <h2>Enter key password</h2>
+                            <t t-if="unlock_error">
+                                <div class="error-msg">
+                                    <t t-esc="unlock_error" />
+                                </div>
+                            </t>
+                            <form method="post" action="/email_parser/unlock">
+                                <input
+                                    type="hidden"
+                                    name="csrf_token"
+                                    t-att-value="csrf_token"
+                                />
+                                <div
+                                    class="field-group"
+                                    style="margin-bottom: 16px;"
+                                >
+                                    <label for="password">Password</label>
+                                    <input
+                                        type="password"
+                                        id="password"
+                                        name="password"
+                                        autocomplete="current-password"
+                                        autofocus="autofocus"
+                                    />
+                                </div>
+                                <button
+                                    type="submit"
+                                    class="btn-primary"
+                                >Unlock</button>
+                            </form>
+                        </div>
+                    </div>
+                </t>
+
+                <!-- ── Unlocked: sidebar layout ──────────────────────────── -->
+                <t t-else="">
+                    <div class="app-layout">
+
+                        <nav class="sidebar">
+                            <div class="sidebar-brand">Email Parser</div>
+                            <ul class="nav-list">
+                                <li
+                                    class="nav-item active"
+                                    data-view="upload"
+                                >Upload</li>
+                                <li
+                                    class="nav-item"
+                                    data-view="instruct"
+                                >Instruct</li>
+                                <li
+                                    class="nav-item"
+                                    data-view="extractions"
+                                >Extractions</li>
+                                <li
+                                    class="nav-item"
+                                    data-view="nominations"
+                                >Nominations</li>
+                            </ul>
+                        </nav>
+
+                        <main class="main">
+
+                            <!-- Upload view -->
+                            <div id="view-upload" class="view active">
+                                <div id="drop-zone">
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                        stroke-width="1.5"
+                                    >
+                                        <path
+                                            stroke-linecap="round"
+                                            stroke-linejoin="round"
+                                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                                        />
+                                    </svg>
+                                    <p><strong>Drop .msg files here</strong><br
+                                        />or click to select</p>
+                                    <input
+                                        type="file"
+                                        id="file-input"
+                                        accept=".msg"
+                                        multiple="multiple"
+                                    />
+                                </div>
+                                <div id="jobs" />
+                            </div>
+
+                            <!-- Instruct view -->
+                            <div id="view-instruct" class="view">
+                                <h2 class="view-title">Instruct</h2>
+                                <div class="instruct-form">
+                                    <div>
+                                        <label
+                                            class="form-label"
+                                            for="instruct-body"
+                                        >Body Content</label>
+                                        <textarea
+                                            id="instruct-body"
+                                            class="body-input"
+                                            placeholder="Enter your instruction…"
+                                        />
+                                    </div>
+                                    <div>
+                                        <label
+                                            class="form-label"
+                                        >Attachments</label>
+                                        <div
+                                            id="instruct-drop"
+                                            class="file-drop"
+                                        >
+                                            <strong
+                                            >Drop files here</strong> or click to select
+                                            <input
+                                                type="file"
+                                                id="instruct-file-input"
+                                                multiple="multiple"
+                                            />
+                                        </div>
+                                    </div>
+                                    <div
+                                        id="instruct-file-chips"
+                                        class="file-chips"
+                                    />
+                                    <button
+                                        id="instruct-submit"
+                                        class="btn-primary"
+                                        style="align-self:flex-start;"
+                                    >Submit</button>
+                                </div>
+                                <div id="instruct-jobs" />
+                            </div>
+
+                            <!-- Extractions view -->
+                            <div id="view-extractions" class="view">
+                                <h2 class="view-title">Extractions</h2>
+                                <div id="extractions-content">
+                                    <div class="list-loading"><span
+                                            class="spinner"
+                                        /> Loading…</div>
+                                </div>
+                            </div>
+
+                            <!-- Nominations view -->
+                            <div id="view-nominations" class="view">
+                                <h2 class="view-title">Nominations</h2>
+                                <div id="nominations-content">
+                                    <div class="list-loading"><span
+                                            class="spinner"
+                                        /> Loading…</div>
+                                </div>
+                            </div>
+
+                        </main>
+                    </div>
+
+                    <script type="text/javascript">
+                        <![CDATA[
+                        const POLL_MS = 1500;
+
+                        // ── Helpers ───────────────────────────────────────────
+                        function esc(s) {
+                            return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+                        }
+
+                        function modalityLabel(m) {
+                            if (!m) return "—";
+                            const parts = [m.modality_type, m.identifier, m.ship_name].filter(Boolean);
+                            return parts.length ? parts.join(" / ") : "—";
+                        }
+
+                        // ── Modal ─────────────────────────────────────────────
+                        function buildNomCard(nom, index, startOpen) {
+                            const refs = nom.references || {};
+                            const refStr = Object.entries(refs).map(([k,v]) => `${k}: ${v}`).join(", ") || `#${index+1}`;
+                            const meta = [nom.transporter, nom.receiver ? `→ ${nom.receiver}` : null, nom.arrival_date ? nom.arrival_date.split("T")[0] : null].filter(Boolean).join(" · ");
+
+                            const pts = (nom.product_transfers || []).map(pt => `
+                                <tr>
+                                    <td>${esc(pt.product_name)}</td>
+                                    <td>${esc(pt.amount)} ${esc(pt.unit_of_measurement)}</td>
+                                    <td>${esc(pt.customs_type)}</td>
+                                    <td>${esc(modalityLabel(pt.source_modality))}</td>
+                                    <td>${esc(modalityLabel(pt.destination_modality))}</td>
+                                </tr>`).join("");
+
+                            const surveyFields = ["sample_required","inspection_before","inspection_after","certificate_of_analysis"];
+                            const surveyKvs = surveyFields.filter(f => nom.survey && nom.survey[f]).map(f =>
+                                `<span class="kv-key">${f.replace(/_/g," ")}</span><span class="kv-val">Yes</span>`
+                            ).join("");
+
+                            return `
+                                <div class="nom-card${startOpen ? " open" : ""}">
+                                    <div class="nom-summary">
+                                        <div class="nom-summary-left">
+                                            <span class="nom-ref">${esc(refStr)}</span>
+                                            <span class="nom-meta">${esc(meta)}</span>
+                                        </div>
+                                        <span class="nom-badge">${esc(nom.nomination_type || "—")}</span>
+                                        <span class="nom-chevron">▶</span>
+                                    </div>
+                                    <div class="nom-detail">
+                                        <div class="detail-section">
+                                            <div class="detail-section-title">Details</div>
+                                            <div class="kv-grid">
+                                                <span class="kv-key">Sender</span><span class="kv-val">${esc(nom.sender)}</span>
+                                                <span class="kv-key">Transporter</span><span class="kv-val">${esc(nom.transporter)}</span>
+                                                <span class="kv-key">Receiver</span><span class="kv-val">${esc(nom.receiver)}</span>
+                                                <span class="kv-key">Arrival</span><span class="kv-val">${esc((nom.arrival_date||"").split("T")[0])}</span>
+                                                ${nom.agent ? `<span class="kv-key">Agent</span><span class="kv-val">${esc(nom.agent)}</span>` : ""}
+                                            </div>
+                                        </div>
+                                        ${pts ? `
+                                        <div class="detail-section">
+                                            <div class="detail-section-title">Product Transfers</div>
+                                            <table class="pt-table">
+                                                <thead><tr>
+                                                    <th>Product</th><th>Amount</th><th>Customs</th><th>From</th><th>To</th>
+                                                </tr></thead>
+                                                <tbody>${pts}</tbody>
+                                            </table>
+                                        </div>` : ""}
+                                        ${surveyKvs ? `
+                                        <div class="detail-section">
+                                            <div class="detail-section-title">Survey</div>
+                                            <div class="kv-grid">${surveyKvs}</div>
+                                        </div>` : ""}
+                                    </div>
+                                </div>`;
+                        }
+
+                        function openModal(json) {
+                            const data = (json.result || {}).data || {};
+                            const nominations = data.nominations || [];
+                            const subject = data.subject || json.id || "";
+                            const from = data.from || "";
+
+                            const nomHtml = nominations.map((n, i) =>
+                                buildNomCard(n, i, nominations.length === 1)
+                            ).join("");
+
+                            const backdrop = document.createElement("div");
+                            backdrop.className = "modal-backdrop";
+                            backdrop.innerHTML = `
+                                <div class="modal" role="dialog" aria-modal="true">
+                                    <div class="modal-header">
+                                        <div class="modal-header-text">
+                                            <h2>${esc(subject)}</h2>
+                                            <p>${esc(from)}</p>
+                                        </div>
+                                        <button class="modal-close" aria-label="Close">✕</button>
+                                    </div>
+                                    <div class="modal-body">${nomHtml}</div>
+                                </div>`;
+
+                            backdrop.querySelector(".modal-close").addEventListener("click", () => backdrop.remove());
+                            backdrop.addEventListener("click", e => { if (e.target === backdrop) backdrop.remove(); });
+                            backdrop.querySelectorAll(".nom-summary").forEach(el => {
+                                el.addEventListener("click", () => el.closest(".nom-card").classList.toggle("open"));
+                            });
+
+                            document.body.appendChild(backdrop);
+                        }
+
+                        // ── Job cards ─────────────────────────────────────────
+                        function createCard(filename, container) {
+                            const card = document.createElement("div");
+                            card.className = "job-card";
+                            card.innerHTML = `
+                                <div class="job-header">
+                                    <span class="job-filename" title="${filename}">${filename}</span>
+                                    <span class="job-status status-uploading">Uploading</span>
+                                </div>
+                                <div class="job-progress">
+                                    <span class="spinner"></span>
+                                    <span class="job-progress-text">Sending file…</span>
+                                </div>`;
+                            (container || document.getElementById("jobs")).prepend(card);
+                            return {
+                                setStatus(label, cls) {
+                                    const s = card.querySelector(".job-status");
+                                    s.textContent = label;
+                                    s.className = `job-status ${cls}`;
+                                },
+                                setProgress(text) {
+                                    card.querySelector(".job-progress-text").textContent = text;
+                                },
+                                setJobId(id) {
+                                    let el = card.querySelector(".job-id");
+                                    if (!el) {
+                                        el = document.createElement("div");
+                                        el.className = "job-id";
+                                        card.querySelector(".job-header").after(el);
+                                    }
+                                    el.textContent = `Job: ${id}`;
+                                },
+                                showResult(json) {
+                                    card.querySelector(".job-progress").remove();
+                                    // Invalidate list caches so next visit shows fresh data
+                                    delete listCache.extractions;
+                                    delete listCache.nominations;
+                                    const btn = document.createElement("button");
+                                    btn.className = "result-btn";
+                                    btn.textContent = "View Result →";
+                                    btn.addEventListener("click", () => openModal(json));
+                                    card.appendChild(btn);
+                                },
+                                showError(msg) {
+                                    this.setStatus("Error", "status-error");
+                                    card.querySelector(".job-progress-text").textContent = msg;
+                                    card.querySelector(".spinner").remove();
+                                }
+                            };
+                        }
+
+                        async function processFile(file) {
+                            const ui = createCard(file.name);
+                            try {
+                                const form = new FormData();
+                                form.append("msg_file", file);
+                                const submitResp = await fetch("/email_parser/submit", {
+                                    method: "POST",
+                                    body: form,
+                                });
+                                const submitData = await submitResp.json();
+                                if (submitData.error) throw new Error(submitData.error);
+
+                                const jobId = submitData.id;
+                                ui.setJobId(jobId);
+                                ui.setStatus("Pending", "status-pending");
+                                ui.setProgress("Waiting for result…");
+
+                                while (true) {
+                                    await new Promise(r => setTimeout(r, POLL_MS));
+                                    const pollResp = await fetch(`/email_parser/poll/${jobId}`);
+                                    const result   = await pollResp.json();
+                                    if (result.error) throw new Error(result.error);
+                                    if (result.status !== "PENDING") {
+                                        const ok = result.status_code >= 200 && result.status_code < 300;
+                                        ui.setStatus(result.status, ok ? "status-success" : "status-error");
+                                        ui.showResult(result);
+                                        return;
+                                    }
+                                }
+                            } catch (err) {
+                                ui.showError(err.message);
+                            }
+                        }
+
+                        // ── List views ────────────────────────────────────────
+                        const listCache = {};
+
+                        async function loadExtractions() {
+                            if (listCache.extractions) { renderExtractions(listCache.extractions); return; }
+                            const el = document.getElementById("extractions-content");
+                            el.innerHTML = '<div class="list-loading"><span class="spinner"></span> Loading…</div>';
+                            try {
+                                const resp = await fetch("/email_parser/api/extractions");
+                                const data = await resp.json();
+                                listCache.extractions = data;
+                                renderExtractions(data);
+                            } catch {
+                                el.innerHTML = '<p class="list-empty">Failed to load extractions.</p>';
+                            }
+                        }
+
+                        function renderExtractions(items) {
+                            const el = document.getElementById("extractions-content");
+                            if (!items.length) {
+                                el.innerHTML = '<p class="list-empty">No extractions yet.</p>';
+                                return;
+                            }
+                            el.innerHTML = items.map(e => `
+                                <div class="list-item" data-id="${e.id}">
+                                    <div class="list-item-title">${esc(e.subject || e.job_id || "—")}</div>
+                                    <div class="list-item-meta">${esc(e.email_from)} · ${e.nomination_count} nomination${e.nomination_count !== 1 ? "s" : ""}</div>
+                                </div>`).join("");
+                            el.querySelectorAll(".list-item").forEach(item => {
+                                item.addEventListener("click", async () => {
+                                    const resp = await fetch(`/email_parser/api/extraction/${item.dataset.id}`);
+                                    const json = await resp.json();
+                                    openModal(json);
+                                });
+                            });
+                        }
+
+                        async function loadNominations() {
+                            if (listCache.nominations) { renderNominations(listCache.nominations); return; }
+                            const el = document.getElementById("nominations-content");
+                            el.innerHTML = '<div class="list-loading"><span class="spinner"></span> Loading…</div>';
+                            try {
+                                const resp = await fetch("/email_parser/api/nominations");
+                                const data = await resp.json();
+                                listCache.nominations = data;
+                                renderNominations(data);
+                            } catch {
+                                el.innerHTML = '<p class="list-empty">Failed to load nominations.</p>';
+                            }
+                        }
+
+                        function renderNominations(items) {
+                            const el = document.getElementById("nominations-content");
+                            if (!items.length) {
+                                el.innerHTML = '<p class="list-empty">No nominations yet.</p>';
+                                return;
+                            }
+                            el.innerHTML = items.map(n => {
+                                const refStr = Object.entries(n.references || {}).map(([k,v]) => `${v}`).join(", ") || "—";
+                                const meta = [n.nomination_type, n.transporter, n.arrival_date].filter(Boolean).join(" · ");
+                                return `<div class="list-item" data-id="${n.id}">
+                                    <div class="list-item-title">${esc(refStr)}${n.subject ? ` — ${esc(n.subject)}` : ""}</div>
+                                    <div class="list-item-meta">${esc(meta)}</div>
+                                </div>`;
+                            }).join("");
+                            el.querySelectorAll(".list-item").forEach(item => {
+                                item.addEventListener("click", async () => {
+                                    const resp = await fetch(`/email_parser/api/nomination/${item.dataset.id}`);
+                                    const json = await resp.json();
+                                    openModal(json);
+                                });
+                            });
+                        }
+
+                        // ── Navigation ────────────────────────────────────────
+                        document.querySelectorAll(".nav-item").forEach(navItem => {
+                            navItem.addEventListener("click", () => {
+                                const viewName = navItem.dataset.view;
+                                document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
+                                navItem.classList.add("active");
+                                document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+                                document.getElementById(`view-${viewName}`).classList.add("active");
+                                if (viewName === "extractions") loadExtractions();
+                                else if (viewName === "nominations") loadNominations();
+                            });
+                        });
+
+                        // ── Drop zone ─────────────────────────────────────────
+                        const zone  = document.getElementById("drop-zone");
+                        const input = document.getElementById("file-input");
+
+                        zone.addEventListener("click", () => input.click());
+                        input.addEventListener("change", () => {
+                            [...input.files].forEach(processFile);
+                            input.value = "";
+                        });
+                        zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
+                        zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+                        zone.addEventListener("drop", e => {
+                            e.preventDefault();
+                            zone.classList.remove("drag-over");
+                            const files = [...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith(".msg"));
+                            if (files.length) files.forEach(processFile);
+                        });
+
+                        // ── Instruct view ─────────────────────────────────────
+                        const instructDrop  = document.getElementById("instruct-drop");
+                        const instructInput = document.getElementById("instruct-file-input");
+                        const instructChips = document.getElementById("instruct-file-chips");
+                        let instructFiles = [];
+
+                        function renderChips() {
+                            instructChips.innerHTML = instructFiles.map((f, i) => `
+                                <span class="file-chip">${esc(f.name)}<button class="file-chip-remove" data-i="${i}">✕</button></span>
+                            `).join("");
+                            instructChips.querySelectorAll(".file-chip-remove").forEach(btn => {
+                                btn.addEventListener("click", () => {
+                                    instructFiles.splice(Number(btn.dataset.i), 1);
+                                    renderChips();
+                                });
+                            });
+                        }
+
+                        instructDrop.addEventListener("click", () => instructInput.click());
+                        instructInput.addEventListener("change", () => {
+                            instructFiles.push(...instructInput.files);
+                            instructInput.value = "";
+                            renderChips();
+                        });
+                        instructDrop.addEventListener("dragover", e => { e.preventDefault(); instructDrop.classList.add("drag-over"); });
+                        instructDrop.addEventListener("dragleave", () => instructDrop.classList.remove("drag-over"));
+                        instructDrop.addEventListener("drop", e => {
+                            e.preventDefault();
+                            instructDrop.classList.remove("drag-over");
+                            instructFiles.push(...e.dataTransfer.files);
+                            renderChips();
+                        });
+
+                        document.getElementById("instruct-submit").addEventListener("click", async () => {
+                            const body = document.getElementById("instruct-body").value.trim();
+                            if (!body && instructFiles.length === 0) return;
+
+                            const form = new FormData();
+                            form.append("body_content", body);
+                            instructFiles.forEach(f => form.append("attachments", f));
+
+                            const ui = createCard("Instruction", document.getElementById("instruct-jobs"));
+                            try {
+                                const submitResp = await fetch("/email_parser/instruct", {
+                                    method: "POST",
+                                    body: form,
+                                });
+                                const submitData = await submitResp.json();
+                                if (submitData.error) throw new Error(submitData.error);
+
+                                const jobId = submitData.id;
+                                ui.setJobId(jobId);
+                                ui.setStatus("Pending", "status-pending");
+                                ui.setProgress("Waiting for result…");
+
+                                while (true) {
+                                    await new Promise(r => setTimeout(r, POLL_MS));
+                                    const pollResp = await fetch(`/email_parser/poll/${jobId}`);
+                                    const result   = await pollResp.json();
+                                    if (result.error) throw new Error(result.error);
+                                    if (result.status !== "PENDING") {
+                                        const ok = result.status_code >= 200 && result.status_code < 300;
+                                        ui.setStatus(result.status, ok ? "status-success" : "status-error");
+                                        ui.showResult(result);
+                                        return;
+                                    }
+                                }
+                            } catch (err) {
+                                ui.showError(err.message);
+                            }
+                        });
+                        ]]>
+                    </script>
+                </t>
+            </body>
+        </html>
+    </template>
+</odoo>
