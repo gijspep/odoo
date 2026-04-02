@@ -18,6 +18,7 @@ in odoo/tools/safe_eval.py
     add:
         "LOAD_SMALL_INT", to _EXPR_OPCODES
         "NOT_TAKEN", to _EXPR_OPCODES
+        "LOAD_FAST_BORROW", to _EXPR_OPCODES
 
 then run:
     python odoo-bin --addons-path=<addons-path> -d <your-db-name> -i base,web
