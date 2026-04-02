@@ -193,6 +193,7 @@ _EXPR_OPCODES = (
                 # 3.14
                 "NOT_TAKEN",
                 "LOAD_SMALL_INT",
+                "LOAD_FAST_BORROW",
             ]
         )
     )
