@@ -1,6 +1,7 @@
 import base64
 import json
 import logging
+import os
 
 import requests as http_requests
 from cryptography.exceptions import InvalidTag
@@ -17,11 +18,32 @@ from odoo.addons.email_parser.crypto import (
 _logger = logging.getLogger(__name__)
 
 # Decrypted AES key held in memory after unlock. None until unlocked.
-# Note: in a multi-worker deployment each worker must be unlocked independently.
+# In a multi-worker deployment each worker unlocks independently,
+# but all workers read the same EMAIL_PARSER_KEY_PASSWORD env var so
+# auto-unlock is transparent.
 _cached_key: bytes | None = None
 
 COMPANY_UID = "9F6C2A48-7B1E-4D3B-AE42-1C8E7F4A0D95"
 EXTERNAL_API = "http://localhost:8000"
+
+
+def _try_auto_unlock() -> None:
+    """If EMAIL_PARSER_KEY_PASSWORD is set and the key is not yet cached,
+    attempt to decrypt and cache it. Called lazily on the first request
+    that needs the key, so request.env is available."""
+    global _cached_key
+    if _cached_key is not None:
+        return
+    password = os.environ.get("EMAIL_PARSER_KEY_PASSWORD")
+    if not password:
+        return
+    try:
+        _cached_key = _load_and_decrypt(password)
+        _logger.info("email_parser: AES key auto-unlocked via environment variable")
+    except Exception:
+        _logger.warning(
+            "email_parser: auto-unlock failed (wrong password or no key configured)"
+        )
 
 
 def _load_and_decrypt(password: str) -> bytes:
@@ -40,21 +62,46 @@ def _load_and_decrypt(password: str) -> bytes:
 
 class EmailParserController(http.Controller):
     # ── Portal landing ────────────────────────────────────────────────────────
-
     @http.route("/email_parser", type="http", auth="public")
-    def portal_landing_page(self, **kwargs):
+    def portal_landing_page(self, view="upload", id=None, **kwargs):
+        _try_auto_unlock()
         key_set = bool(request.env["parser.api_key"].sudo().search([], limit=1))
+        ctx = {
+            "key_unlocked": _cached_key is not None,
+            "key_set": key_set,
+            "csrf_token": request.csrf_token(),
+            "current_view": view,
+        }
+
+        if _cached_key is not None and key_set:
+            env = request.env
+            if view == "extractions":
+                ctx["extractions"] = (
+                    env["parser.extraction"].sudo().search([], order="id desc")
+                )
+            elif view == "extraction" and id:
+                try:
+                    rec = env["parser.extraction"].sudo().browse(int(id))
+                    ctx["extraction"] = rec if rec.exists() else None
+                except (ValueError, TypeError):
+                    ctx["extraction"] = None
+            elif view == "nominations":
+                ctx["nominations"] = (
+                    env["parser.nomination"].sudo().search([], order="id desc")
+                )
+            elif view == "nomination" and id:
+                try:
+                    rec = env["parser.nomination"].sudo().browse(int(id))
+                    ctx["nomination"] = rec if rec.exists() else None
+                except (ValueError, TypeError):
+                    ctx["nomination"] = None
+
         return request.render(
             "email_parser.standalone_portal_template",
-            {
-                "key_unlocked": _cached_key is not None,
-                "key_set": key_set,
-                "csrf_token": request.csrf_token(),
-            },
+            ctx,
         )
 
     # ── Unlock ────────────────────────────────────────────────────────────────
-
     @http.route(
         "/email_parser/unlock",
         type="http",
@@ -89,7 +136,6 @@ class EmailParserController(http.Controller):
         return request.redirect("/email_parser")
 
     # ── Job submission (proxy) ────────────────────────────────────────────────
-
     @http.route(
         "/email_parser/submit",
         type="http",
@@ -98,6 +144,7 @@ class EmailParserController(http.Controller):
         csrf=False,
     )
     def submit_job(self, msg_file=None, **kwargs):
+        _try_auto_unlock()
         if _cached_key is None:
             return Response(
                 json.dumps({"error": "Server key not unlocked."}),
@@ -132,7 +179,6 @@ class EmailParserController(http.Controller):
         return Response(json.dumps(result), content_type="application/json")
 
     # ── Instruct submission (proxy) ───────────────────────────────────────────
-
     @http.route(
         "/email_parser/instruct",
         type="http",
@@ -141,6 +187,7 @@ class EmailParserController(http.Controller):
         csrf=False,
     )
     def submit_instruct(self, body_content="", **kwargs):
+        _try_auto_unlock()
         if _cached_key is None:
             return Response(
                 json.dumps({"error": "Server key not unlocked."}),
@@ -153,12 +200,14 @@ class EmailParserController(http.Controller):
             content = base64.b64encode(f.read()).decode("utf-8")
             mime = f.content_type or "application/octet-stream"
             ext = f.filename.rsplit(".", 1)[-1].lower() if "." in f.filename else ""
-            files_data.append({
-                "fileName": f.filename,
-                "fileType": ext,
-                "contentType": mime,
-                "content": content,
-            })
+            files_data.append(
+                {
+                    "fileName": f.filename,
+                    "fileType": ext,
+                    "contentType": mime,
+                    "content": content,
+                }
+            )
 
         try:
             json_bytes = json.dumps(
@@ -183,7 +232,6 @@ class EmailParserController(http.Controller):
         return Response(json.dumps(result), content_type="application/json")
 
     # ── Job polling (proxy) ───────────────────────────────────────────────────
-
     @http.route(
         "/email_parser/poll/<string:job_id>",
         type="http",
@@ -191,6 +239,7 @@ class EmailParserController(http.Controller):
         csrf=False,
     )
     def poll_job(self, job_id, **kwargs):
+        _try_auto_unlock()
         if _cached_key is None:
             return Response(
                 json.dumps({"error": "Server key not unlocked."}),
@@ -221,165 +270,118 @@ class EmailParserController(http.Controller):
 
         return Response(json.dumps(result), content_type="application/json")
 
-    # ── List / detail API ─────────────────────────────────────────────────────
-
-    @http.route("/email_parser/api/extractions", type="http", auth="public", csrf=False)
-    def api_list_extractions(self, **kwargs):
-        extractions = (
-            request.env["parser.extraction"].sudo().search([], order="id desc")
-        )
-        data = [
-            {
-                "id": e.id,
-                "job_id": e.job_id or "",
-                "subject": e.subject or "",
-                "email_from": e.email_from or "",
-                "nomination_count": len(e.nominations),
-            }
-            for e in extractions
-        ]
-        return Response(json.dumps(data), content_type="application/json")
+    # ── Draft confirmation ────────────────────────────────────────────────────
 
     @http.route(
-        "/email_parser/api/extraction/<int:extraction_id>",
+        "/email_parser/confirm/<int:extraction_id>",
         type="http",
         auth="public",
-        csrf=False,
+        methods=["POST"],
+        csrf=True,
     )
-    def api_get_extraction(self, extraction_id, **kwargs):
+    def confirm_extraction(self, extraction_id, **kwargs):
         extraction = request.env["parser.extraction"].sudo().browse(extraction_id)
         if not extraction.exists():
             return Response(
-                json.dumps({"error": "Not found"}),
+                json.dumps({"error": "Extraction not found."}),
                 status=404,
                 content_type="application/json",
             )
-        data = {
-            "result": {
-                "data": {
-                    "from": extraction.email_from or "",
-                    "subject": extraction.subject or "",
-                    "nominations": [
-                        self._nomination_to_dict(n) for n in extraction.nominations
-                    ],
-                }
-            }
-        }
-        return Response(json.dumps(data), content_type="application/json")
-
-    @http.route("/email_parser/api/nominations", type="http", auth="public", csrf=False)
-    def api_list_nominations(self, **kwargs):
-        nominations = (
-            request.env["parser.nomination"].sudo().search([], order="id desc")
-        )
-        data = [
-            {
-                "id": n.id,
-                "nomination_type": n.nomination_type or "",
-                "arrival_date": str(n.arrival_date) if n.arrival_date else None,
-                "transporter": n.transporter.name if n.transporter else "",
-                "receiver": n.receiver.name if n.receiver else "",
-                "sender": n.sender.name if n.sender else "",
-                "references": {r.label: r.value for r in n.references},
-                "subject": n.extraction_id.subject if n.extraction_id else "",
-            }
-            for n in nominations
-        ]
-        return Response(json.dumps(data), content_type="application/json")
-
-    @http.route(
-        "/email_parser/api/nomination/<int:nomination_id>",
-        type="http",
-        auth="public",
-        csrf=False,
-    )
-    def api_get_nomination(self, nomination_id, **kwargs):
-        nom = request.env["parser.nomination"].sudo().browse(nomination_id)
-        if not nom.exists():
+        if extraction.state != "draft":
             return Response(
-                json.dumps({"error": "Not found"}),
-                status=404,
+                json.dumps({"error": "Extraction is already confirmed."}),
+                status=400,
                 content_type="application/json",
             )
-        data = {
-            "result": {
-                "data": {
-                    "from": nom.extraction_id.email_from if nom.extraction_id else "",
-                    "subject": nom.extraction_id.subject if nom.extraction_id else "",
-                    "nominations": [self._nomination_to_dict(nom)],
-                }
-            }
-        }
-        return Response(json.dumps(data), content_type="application/json")
-
-    def _nomination_to_dict(self, nom):
-        return {
-            "references": {r.label: r.value for r in nom.references},
-            "product_transfers": [
-                {
-                    "product_name": pt.product_name or "",
-                    "amount": pt.amount,
-                    "unit_of_measurement": pt.unit_of_measurement or "",
-                    "customs_type": pt.customs_type or "",
-                    "country_of_origin": pt.country_of_origin or "",
-                    "source_modality": {
-                        "modality_type": pt.source_modality.modality_type or "",
-                        "identifier": pt.source_modality.identifier or "",
-                        "ship_name": pt.source_modality.ship_name or "",
-                    }
-                    if pt.source_modality
-                    else None,
-                    "destination_modality": {
-                        "modality_type": pt.destination_modality.modality_type or "",
-                        "identifier": pt.destination_modality.identifier or "",
-                        "ship_name": pt.destination_modality.ship_name or "",
-                    }
-                    if pt.destination_modality
-                    else None,
-                }
-                for pt in nom.product_transfers
-            ],
-            "arrival_date": str(nom.arrival_date) if nom.arrival_date else None,
-            "transporter": nom.transporter.name if nom.transporter else None,
-            "receiver": nom.receiver.name if nom.receiver else None,
-            "sender": nom.sender.name if nom.sender else None,
-            "agent": nom.agent or None,
-            "nomination_type": nom.nomination_type or "",
-            "survey": {
-                "sample_required": nom.sample_required,
-                "inspection_before": nom.inspection_before,
-                "inspection_after": nom.inspection_after,
-                "certificate_of_analysis": nom.certificate_of_analysis,
-            },
-        }
+        extraction.state = "confirmed"
+        return request.redirect(f"/email_parser?view=extraction&id={extraction_id}")
 
     # ── Helpers ───────────────────────────────────────────────────────────────
 
-    def _get_or_create_company(self, name):
-        if not name:
-            return False
-        env = request.env["parser.company"].sudo()
-        company = env.search([("name", "=ilike", name)], limit=1)
-        if not company:
-            company = env.create({"name": name})
-        return company.id
+    # Words stripped from ship names and identifiers when normalising for matching.
+    # Applied regardless of position (prefix, suffix, or middle word).
+    _SHIP_NOISE = frozenset(
+        {"ship", "barge", "vessel", "mt", "mv", "ms", "tanker", "boat", "motor"},
+    )
+    _ID_NOISE = frozenset({"eni", "imo"})
 
-    def _create_modality(self, mod_data):
-        if not mod_data:
-            return False
-        return (
-            request.env["parser.modality"]
-            .sudo()
-            .create(
-                {
-                    "modality_type": (mod_data.get("modality_type") or "").upper(),
-                    "identifier": mod_data.get("identifier") or False,
-                    "ship_name": mod_data.get("ship_name") or False,
-                    "ship_type": mod_data.get("ship_type") or False,
-                }
-            )
-            .id
-        )
+    def _normalize_ship_name(self, name):
+        words = (name or "").lower().split()
+        return " ".join(w for w in words if w not in self._SHIP_NOISE).strip()
+
+    def _normalize_identifier(self, identifier):
+        parts = (identifier or "").lower().split()
+        return " ".join(p for p in parts if p not in self._ID_NOISE).strip()
+
+    def _save_previous_cargoes(self, extraction, cargoes_data):
+        if not cargoes_data:
+            return
+
+        # Build lookup: normalised_key -> {(modality_id, side, pt_id)}
+        # Only SHIP modalities are considered for matching.
+        lookup = {}
+        for nom in extraction.nominations:
+            for pt in nom.product_transfers:
+                for side, modality in [
+                    ("source", pt.source_modality),
+                    ("destination", pt.destination_modality),
+                ]:
+                    if not modality or modality.modality_type != "SHIP":
+                        continue
+                    if modality.ship_name:
+                        key = self._normalize_ship_name(modality.ship_name)
+                        if key:
+                            lookup.setdefault(key, set()).add(
+                                (modality.id, side, pt.id),
+                            )
+                    if modality.identifier:
+                        key = self._normalize_identifier(modality.identifier)
+                        if key:
+                            lookup.setdefault(key, set()).add(
+                                (modality.id, side, pt.id),
+                            )
+
+        env = request.env["parser.previous_cargo"].sudo()
+        for cargo in cargoes_data:
+            ship_name = cargo.get("ship_name") or ""
+            identifier = cargo.get("identifier") or ""
+            common_vals = {
+                "tank_id": cargo.get("tank_id") or "",
+                "first_last": cargo.get("first_last") or "",
+                "second_last": cargo.get("second_last") or "",
+                "third_last": cargo.get("third_last") or "",
+            }
+
+            matches = set()
+            if ship_name:
+                matches |= lookup.get(self._normalize_ship_name(ship_name), set())
+            if identifier:
+                matches |= lookup.get(self._normalize_identifier(identifier), set())
+
+            if matches:
+                for modality_id, side, pt_id in matches:
+                    # --- DYNAMICALLY DETERMINE THE FIELD NAME ---
+                    transfer_key = (
+                        "source_transfer_id"
+                        if side == "source"
+                        else "destination_transfer_id"
+                    )
+                    env.create(
+                        {
+                            **common_vals,
+                            "modality_id": modality_id,
+                            transfer_key: pt_id,
+                        },
+                    )
+            else:
+                name_parts = [p for p in [ship_name, identifier] if p]
+                env.create(
+                    {
+                        **common_vals,
+                        "unmatched_name": " / ".join(name_parts),
+                        "extraction_id": extraction.id,
+                    },
+                )
 
     def _save_extraction(self, job_id, result):
         env = request.env
@@ -392,12 +394,23 @@ class EmailParserController(http.Controller):
 
         data = (result.get("result") or {}).get("data") or {}
 
+        # Cache model environments for cleaner code
+        modality_env = env["parser.modality"].sudo()
+        company_env = env["parser.company"].sudo()
+
         nominations_vals = []
         for nom_data in data.get("nominations") or []:
             pt_vals = []
             for pt_data in nom_data.get("product_transfers") or []:
-                source_id = self._create_modality(pt_data.get("source_modality"))
-                dest_id = self._create_modality(pt_data.get("destination_modality"))
+                # --- THIS IS THE NEW, CLEAN LOGIC ---
+                source_id = modality_env.get_or_create_from_api(
+                    pt_data.get("source_modality"),
+                )
+                dest_id = modality_env.get_or_create_from_api(
+                    pt_data.get("destination_modality"),
+                )
+                # ------------------------------------
+
                 pt_vals.append(
                     (
                         0,
@@ -414,7 +427,7 @@ class EmailParserController(http.Controller):
                             "country_of_origin": pt_data.get("country_of_origin")
                             or False,
                         },
-                    )
+                    ),
                 )
 
             ref_vals = []
@@ -437,25 +450,29 @@ class EmailParserController(http.Controller):
                     0,
                     {
                         "arrival_date": arrival_date,
-                        "agent": nom_data.get("agent") or False,
-                        "transporter": self._get_or_create_company(
-                            nom_data.get("transporter")
-                        ),
-                        "receiver": self._get_or_create_company(
-                            nom_data.get("receiver")
-                        ),
-                        "sender": self._get_or_create_company(nom_data.get("sender")),
+                        "agent": company_env.create({"name": n}).id
+                        if (n := nom_data.get("agent"))
+                        else False,
+                        "transporter": company_env.create({"name": n}).id
+                        if (n := nom_data.get("transporter"))
+                        else False,
+                        "receiver": company_env.create({"name": n}).id
+                        if (n := nom_data.get("receiver"))
+                        else False,
+                        "sender": company_env.create({"name": n}).id
+                        if (n := nom_data.get("sender"))
+                        else False,
                         "nomination_type": nom_data.get("nomination_type") or "",
                         "sample_required": bool(survey.get("sample_required")),
                         "inspection_before": bool(survey.get("inspection_before")),
                         "inspection_after": bool(survey.get("inspection_after")),
                         "certificate_of_analysis": bool(
-                            survey.get("certificate_of_analysis")
+                            survey.get("certificate_of_analysis"),
                         ),
                         "references": ref_vals,
                         "product_transfers": pt_vals,
                     },
-                )
+                ),
             )
 
         extraction = (
@@ -467,9 +484,12 @@ class EmailParserController(http.Controller):
                     "email_from": data.get("from") or "",
                     "subject": data.get("subject") or "",
                     "nominations_summary": data.get("nominations_summary") or "",
-                    "companies_summary": data.get("companies_summary") or "",
+                    "previous_cargoes_summary": data.get("previous_cargoes_summary")
+                    or "",
+                    "state": "draft",
                     "nominations": nominations_vals,
-                }
+                },
             )
         )
+        self._save_previous_cargoes(extraction, data.get("previous_cargoes") or [])
         return extraction

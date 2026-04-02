@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<templates>
+    <t t-name="email_parser.InstructView">
+        <div class="d-flex flex-column align-items-center p-5 gap-4">
+
+            <div class="w-100" style="max-width: 600px;">
+                <label class="form-label fw-semibold">Body Content</label>
+                <textarea class="form-control" rows="5"
+                          placeholder="Enter your instruction…"
+                          t-model="state.body" />
+            </div>
+
+            <div class="w-100" style="max-width: 600px;">
+                <label class="form-label fw-semibold">Attachments</label>
+                <div class="ep-drop-zone border border-2 rounded-2 p-3 text-center"
+                     style="cursor: pointer;"
+                     t-on-click="onDropZoneClick"
+                     t-on-dragover="onDragOver"
+                     t-on-dragleave="onDragLeave"
+                     t-on-drop="onDrop">
+                    <span class="text-muted">
+                        <strong>Drop files here</strong> or click to select
+                    </span>
+                    <input type="file" multiple="1" class="d-none"
+                           t-ref="fileInput" t-on-change="onFileChange" />
+                </div>
+                <div t-if="state.files.length" class="d-flex flex-wrap gap-2 mt-2">
+                    <t t-foreach="state.files" t-as="f" t-key="f.id">
+                        <span class="badge bg-secondary d-flex align-items-center gap-1 fw-normal">
+                            <t t-out="f.file.name" />
+                            <button type="button"
+                                    class="btn-close btn-close-white ms-1"
+                                    style="font-size: 0.6em;"
+                                    t-on-click="() => removeFile(f.id)" />
+                        </span>
+                    </t>
+                </div>
+            </div>
+
+            <div class="w-100" style="max-width: 600px;">
+                <button type="button" class="btn btn-primary" t-on-click="onSubmit">
+                    Submit
+                </button>
+            </div>
+
+            <div class="w-100 d-flex flex-column gap-2" style="max-width: 600px;">
+                <t t-foreach="state.jobs" t-as="job" t-key="job.id">
+                    <div class="card">
+                        <div class="card-body py-2">
+                            <div class="d-flex justify-content-between align-items-center gap-2">
+                                <span class="fw-semibold">Instruction</span>
+                                <span t-attf-class="badge flex-shrink-0 #{job.badgeCls}"
+                                      t-out="job.status" />
+                            </div>
+                            <div t-if="job.jobRef"
+                                 class="text-muted small mt-1 font-monospace"
+                                 t-out="'Job: ' + job.jobRef" />
+                            <div t-if="job.progress"
+                                 class="d-flex align-items-center gap-2 mt-1">
+                                <div class="spinner-border spinner-border-sm text-primary"
+                                     role="status" />
+                                <span class="text-muted small" t-out="job.progress" />
+                            </div>
+                            <a t-if="job.resultLink"
+                               t-att-href="job.resultLink"
+                               class="btn btn-sm btn-outline-primary mt-2">
+                                View Result →
+                            </a>
+                        </div>
+                    </div>
+                </t>
+            </div>
+
+        </div>
+    </t>
+</templates>

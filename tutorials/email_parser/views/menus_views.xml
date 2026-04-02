@@ -1,0 +1,81 @@
+<odoo>
+    <menuitem id="menu_email_parser_root" name="Email Parser" sequence="0" />
+    <menuitem
+        id="menu_email_parser_extractions"
+        name="Extractions"
+        parent="menu_email_parser_root"
+        action="action_parser_extraction"
+        sequence="10"
+    />
+    <menuitem
+        id="menu_email_parser_nominations"
+        name="Nominations"
+        parent="menu_email_parser_root"
+        action="action_parser_nomination"
+        sequence="20"
+    />
+    <menuitem
+        id="menu_email_parser_companies"
+        name="Companies"
+        parent="menu_email_parser_root"
+        action="action_parser_company"
+        sequence="30"
+    />
+    <menuitem
+        id="menu_email_parser_modalities"
+        name="Modalities"
+        parent="menu_email_parser_root"
+        action="action_parser_modality"
+        sequence="35"
+    />
+    <menuitem
+        id="menu_email_parser_product_transfers"
+        name="Product Transfers"
+        parent="menu_email_parser_root"
+        action="action_parser_product_transfer"
+        sequence="40"
+    />
+    <menuitem
+        id="menu_email_parser_config"
+        name="Configuration"
+        parent="menu_email_parser_root"
+        sequence="60"
+    />
+    <menuitem
+        id="menu_parser_api_keys"
+        name="API Keys"
+        parent="menu_email_parser_config"
+        action="action_parser_api_key"
+        sequence="1"
+        groups="base.group_system"
+    />
+    <menuitem
+        id="menu_parser_set_key"
+        name="Set API Key"
+        parent="menu_email_parser_config"
+        action="action_parser_set_key_wizard"
+        sequence="2"
+        groups="base.group_system"
+    />
+
+    <menuitem
+        id="menu_email_parser_generate"
+        name="Generate"
+        parent="menu_email_parser_root"
+        sequence="70"
+    />
+    <menuitem
+        id="menu_email_parser_email_upload"
+        name="Email Upload"
+        parent="menu_email_parser_generate"
+        action="action_parser_email_upload"
+        sequence="1"
+    />
+    <menuitem
+        id="menu_email_parser_instruct"
+        name="Instruct"
+        parent="menu_email_parser_generate"
+        action="action_parser_instruct"
+        sequence="2"
+    />
+</odoo>

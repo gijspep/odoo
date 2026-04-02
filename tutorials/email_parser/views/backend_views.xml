@@ -86,6 +86,12 @@
                 <field name="job_id" />
                 <field name="subject" />
                 <field name="email_from" />
+                <field
+                    name="state"
+                    widget="badge"
+                    decoration-warning="state == 'draft'"
+                    decoration-success="state == 'confirmed'"
+                />
             </list>
         </field>
     </record>
@@ -95,6 +101,20 @@
         <field name="model">parser.extraction</field>
         <field name="arch" type="xml">
             <form>
+                <header>
+                    <button
+                        name="action_confirm"
+                        string="Confirm"
+                        type="object"
+                        class="btn-primary"
+                        invisible="state != 'draft'"
+                    />
+                    <field
+                        name="state"
+                        widget="statusbar"
+                        statusbar_visible="draft,confirmed"
+                    />
+                </header>
                 <sheet>
                     <group>
                         <field name="job_id" readonly="1" />
@@ -103,7 +123,10 @@
                     </group>
                     <notebook>
                         <page string="Nominations">
-                            <field name="nominations" readonly="1">
+                            <field
+                                name="nominations"
+                                readonly="state == 'confirmed'"
+                            >
                                 <list>
                                     <field name="nomination_type" />
                                     <field name="arrival_date" />
@@ -116,8 +139,22 @@
                         <page string="Summaries">
                             <group>
                                 <field name="nominations_summary" />
-                                <field name="companies_summary" />
+                                <field name="previous_cargoes_summary" />
                             </group>
+                        </page>
+                        <page string="Unmatched Previous Cargoes">
+                            <field
+                                name="unmatched_previous_cargo_ids"
+                                readonly="1"
+                            >
+                                <list>
+                                    <field name="name" />
+                                    <field name="tank_id" />
+                                    <field name="first_last" />
+                                    <field name="second_last" />
+                                    <field name="third_last" />
+                                </list>
+                            </field>
                         </page>
                     </notebook>
                 </sheet>
@@ -183,6 +220,21 @@
         </field>
     </record>
 
+    <record id="view_parser_nomination_list" model="ir.ui.view">
+        <field name="name">parser.nomination.list</field>
+        <field name="model">parser.nomination</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="nomination_type" />
+                <field name="arrival_date" />
+                <field name="transporter" />
+                <field name="sender" />
+                <field name="receiver" />
+                <field name="extraction_id" string="Extraction" />
+            </list>
+        </field>
+    </record>
+
     <record id="action_parser_nomination" model="ir.actions.act_window">
         <field name="name">Nominations</field>
         <field name="res_model">parser.nomination</field>
@@ -190,39 +242,481 @@
         <field name="path">parser-nominations</field>
     </record>
 
-    <!-- ── Menus ──────────────────────────────────────────────────────────── -->
-    <menuitem id="menu_email_parser_root" name="Email Parser" sequence="50" />
 
-    <menuitem
-        id="menu_email_parser_extractions"
-        name="Extractions"
-        parent="menu_email_parser_root"
-        action="action_parser_extraction"
-        sequence="5"
-    />
+    <!-- parser.product_transfer views -->
+    <record id="view_parser_product_transfer_list" model="ir.ui.view">
+        <field name="name">parser.product_transfer.list</field>
+        <field name="model">parser.product_transfer</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="product_name" />
+                <field name="unit_of_measurement" />
+                <field name="amount" />
+                <field name="customs_type" />
+                <field name="country_of_origin" />
+                <field name="source_modality" />
+                <field name="destination_modality" />
+            </list>
+        </field>
+    </record>
 
-    <menuitem
-        id="menu_email_parser_config"
-        name="Configuration"
-        parent="menu_email_parser_root"
-        sequence="10"
-    />
+    <record id="view_parser_product_transfer_form" model="ir.ui.view">
+        <field name="name">parser.product_transfer.form</field>
+        <field name="model">parser.product_transfer</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="product_name" />
+                        <field name="unit_of_measurement" />
+                        <field name="amount" />
+                        <field name="customs_type" />
+                        <field name="country_of_origin" />
+                        <field name="source_modality" />
+                        <field name="destination_modality" />
+                    </group>
+                    <notebook>
+                        <page string="Previous Source Cargoes">
+                            <field name="source_previous_cargo_ids">
+                                <list>
+                                    <field name="modality_id" />
+                                    <field name="tank_id" />
+                                    <field name="first_last" />
+                                    <field name="second_last" />
+                                    <field name="third_last" />
+                                </list>
+                            </field>
+                        </page>
+                        <page string="Previous Destination Cargoes">
+                            <field name="destination_previous_cargo_ids">
+                                <list>
+                                    <field name="modality_id" />
+                                    <field name="tank_id" />
+                                    <field name="first_last" />
+                                    <field name="second_last" />
+                                    <field name="third_last" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
 
-    <menuitem
-        id="menu_parser_api_keys"
-        name="API Keys"
-        parent="menu_email_parser_config"
-        action="action_parser_api_key"
-        sequence="10"
-        groups="base.group_system"
-    />
+    <record id="action_parser_product_transfer" model="ir.actions.act_window">
+        <field name="name">Product Transfer</field>
+        <field name="res_model">parser.product_transfer</field>
+        <field name="view_mode">list,form</field>
+        <field name="path">parser-product_transfer</field>
+    </record>
 
-    <menuitem
-        id="menu_parser_set_key"
-        name="Set API Key"
-        parent="menu_email_parser_config"
-        action="action_parser_set_key_wizard"
-        sequence="20"
-        groups="base.group_system"
-    />
+    <!-- ── parser.modality views ──────────────────────────────────────────── -->
+    <record id="view_parser_modality_list" model="ir.ui.view">
+        <field name="name">parser.modality.list</field>
+        <field name="model">parser.modality</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="modality_type" />
+                <field name="ship_type" />
+                <field name="identifier" />
+                <field name="ship_name" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_parser_modality_form" model="ir.ui.view">
+        <field name="name">parser.modality.form</field>
+        <field name="model">parser.modality</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="modality_type" />
+                        <field
+                            name="ship_type"
+                            invisible="modality_type != 'SHIP'"
+                        />
+                        <field name="identifier" />
+                        <field
+                            name="ship_name"
+                            invisible="modality_type != 'SHIP'"
+                        />
+                    </group>
+                    <notebook>
+                        <page string="Aliases">
+                            <field name="alias_ids">
+                                <list editable="bottom">
+                                    <field name="alias_type" />
+                                    <field name="value" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parser_modality" model="ir.actions.act_window">
+        <field name="name">Modalities</field>
+        <field name="res_model">parser.modality</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- parser.companies views -->
+    <record id="view_parser_company_list" model="ir.ui.view">
+        <field name="name">parser.company.list</field>
+        <field name="model">parser.company</field>
+        <field name="arch" type="xml">
+            <list>
+                <field name="name" />
+                <field name="can_be_agent" />
+                <field name="can_be_transporter" />
+            </list>
+        </field>
+    </record>
+
+    <record id="view_parser_company_form" model="ir.ui.view">
+        <field name="name">parser.company.form</field>
+        <field name="model">parser.company</field>
+        <field name="arch" type="xml">
+            <form>
+                <sheet>
+                    <group>
+                        <field name="name" />
+                        <field name="can_be_agent" />
+                        <field name="can_be_transporter" />
+                    </group>
+                    <notebook>
+                        <page string="Aliases">
+                            <field name="alias_ids">
+                                <list editable="bottom">
+                                    <field name="name" />
+                                </list>
+                            </field>
+                        </page>
+                    </notebook>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_parser_company" model="ir.actions.act_window">
+        <field name="name">Companies</field>
+        <field name="res_model">parser.company</field>
+        <field name="view_mode">list,form</field>
+    </record>
+
+    <!-- ── Remap company wizard ────────────────────────────────────────────── -->
+    <record id="view_remap_company_wizard_form" model="ir.ui.view">
+        <field name="name">parser.remap.company.wizard.form</field>
+        <field name="model">parser.remap.company.wizard</field>
+        <field name="arch" type="xml">
+            <form string="Change Company">
+                <sheet>
+                    <div class="oe_title mb-4">
+                        <h1>Resolve Company</h1>
+                        <span class="text-muted">
+                            Update this company for the current nomination, or merge it globally.
+                        </span>
+                    </div>
+
+                    <group>
+                        <group string="Current Company (Old)">
+                            <field name="old_name" readonly="1" />
+
+                            <separator
+                                string="Resolution Actions"
+                                class="mt-4"
+                            />
+                            <field name="save_alias" />
+                            <field name="delete_old" invisible="save_alias" />
+
+                            <div
+                                colspan="2"
+                                class="alert alert-warning mt-2"
+                                role="alert"
+                                invisible="not save_alias"
+                            >
+                                <strong
+                                >Global Merge:</strong> By saving an alias, the Current Company will be <b
+                                >deleted</b> and all historical database references will be moved to the Target Company.
+                            </div>
+                            <div
+                                colspan="2"
+                                class="alert alert-info mt-2"
+                                role="alert"
+                                invisible="save_alias or not delete_old"
+                            >
+                                <strong
+                                >Local Update &amp; Delete:</strong> The company will be updated for this nomination. The old record will be deleted <i
+                                >only</i> if it is no longer used elsewhere.
+                            </div>
+                        </group>
+
+                        <group string="Target Company (New / Replacement)">
+                            <field
+                                name="new_company_id"
+                                options="{'no_create': True, 'no_open': True}"
+                            />
+                            <hr colspan="2" class="mt-2 mb-2" />
+                            <div colspan="2" class="text-muted mb-2">
+                                <em
+                                >Modifying the name will search for an existing match, or create a brand new company if none is found.</em>
+                            </div>
+                            <field name="new_name" />
+                        </group>
+                    </group>
+                </sheet>
+                <footer>
+                    <button
+                        name="action_apply"
+                        string="Confirm &amp; Apply"
+                        type="object"
+                        class="btn-primary"
+                        data-hotkey="q"
+                    />
+                    <button
+                        string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"
+                        data-hotkey="z"
+                    />
+                </footer>
+            </form>
+        </field>
+    </record>
+
+    <record id="action_remap_company_wizard" model="ir.actions.act_window">
+        <field name="name">Change Company</field>
+        <field name="res_model">parser.remap.company.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ── Remap modality wizard ───────────────────────────────────────────── -->
+    <record id="view_remap_modality_wizard_form" model="ir.ui.view">
+            <field name="name">parser.remap.modality.wizard.form</field>
+            <field name="model">parser.remap.modality.wizard</field>
+            <field name="arch" type="xml">
+                <form string="Change Modality">
+                    <sheet>
+                        <div class="oe_title mb-4">
+                            <h1>Resolve Modality</h1>
+                            <span class="text-muted">
+                                Update this modality for all transfers in the current nomination, or merge it globally.
+                            </span>
+                        </div>
+
+                        <group>
+                            <group string="Current Modality (Old)">
+                                <field
+                                name="old_modality_id"
+                                readonly="1"
+                                options="{'no_open': True}"
+                            />
+                                <field name="old_modality_type" readonly="1" />
+                                <field name="old_identifier" readonly="1" />
+                                <field name="old_ship_name" readonly="1" />
+                                <field name="old_ship_type" readonly="1" />
+
+                                <separator
+                                string="Resolution Actions"
+                                class="mt-4"
+                            />
+                                <field
+                                name="save_name_alias"
+                                invisible="not old_ship_name"
+                            />
+                                <field
+                                name="save_identifier_alias"
+                                invisible="not old_identifier"
+                            />
+
+                                <field
+                                name="delete_old"
+                                invisible="save_name_alias or save_identifier_alias"
+                            />
+
+                                <div
+                                colspan="2"
+                                class="alert alert-warning mt-2"
+                                role="alert"
+                                invisible="not save_name_alias and not save_identifier_alias"
+                            >
+                                    <strong
+                                >Global Merge:</strong> By saving an alias, the Current Modality will be <b
+                                >deleted</b> and all historical database references will be moved to the Target Modality.
+                                </div>
+                                <div
+                                colspan="2"
+                                class="alert alert-info mt-2"
+                                role="alert"
+                                invisible="save_name_alias or save_identifier_alias or not delete_old"
+                            >
+                                    <strong
+                                >Local Update &amp; Delete:</strong> The modality will be updated for this nomination. The old record will be deleted <i
+                                >only</i> if it is no longer used elsewhere.
+                                </div>
+                            </group>
+
+                            <group string="Target Modality (New / Replacement)">
+                                <field
+                                name="new_modality_id"
+                                options="{'no_create': True, 'no_open': True}"
+                            />
+                                <hr colspan="2" class="mt-2 mb-2" />
+                                <div colspan="2" class="text-muted mb-2">
+                                    <em
+                                >Modifying these values will search for an existing match, or create a brand new modality if none is found.</em>
+                                </div>
+
+                                <field name="new_modality_type" />
+                                <field name="new_identifier" />
+                                <field name="new_ship_name" />
+                                <field name="new_ship_type" />
+                            </group>
+                        </group>
+                    </sheet>
+                    <footer>
+                        <button
+                        name="action_apply"
+                        string="Confirm &amp; Apply"
+                        type="object"
+                        class="btn-primary"
+                        data-hotkey="q"
+                    />
+                        <button
+                        string="Cancel"
+                        class="btn-secondary"
+                        special="cancel"
+                        data-hotkey="z"
+                    />
+                    </footer>
+                </form>
+            </field>
+        </record>
+
+    <record id="action_remap_modality_wizard" model="ir.actions.act_window">
+        <field name="name">Change Modality</field>
+        <field name="res_model">parser.remap.modality.wizard</field>
+        <field name="view_mode">form</field>
+        <field name="target">new</field>
+    </record>
+
+    <!-- ── Nomination form (override: remap buttons in draft) ─────────────── -->
+    <record id="view_parser_nomination_form_draft" model="ir.ui.view">
+            <field name="name">parser.nomination.form.draft</field>
+            <field name="model">parser.nomination</field>
+            <field name="inherit_id" ref="view_parser_nomination_form" />
+            <field name="arch" type="xml">
+                <xpath
+                expr="//group[field[@name='nomination_type']]"
+                position="replace"
+            >
+                    <group string="Details">
+                        <field name="extraction_state" invisible="1" />
+                        <field name="nomination_type" />
+                        <field name="arrival_date" />
+
+                        <label for="transporter" />
+                        <div class="o_row">
+                            <field name="transporter" nolabel="1" />
+                            <button
+                            name="%(email_parser.action_remap_company_wizard)d"
+                            type="action"
+                            string="Change"
+                            invisible="extraction_state != 'draft'"
+                            context="{'default_nomination_id': id, 'default_field_name': 'transporter', 'default_old_company_id': transporter}"
+                        />
+                        </div>
+
+                        <label for="sender" />
+                        <div class="o_row">
+                            <field name="sender" nolabel="1" />
+                            <button
+                            name="%(email_parser.action_remap_company_wizard)d"
+                            type="action"
+                            string="Change"
+                            invisible="extraction_state != 'draft'"
+                            context="{'default_nomination_id': id, 'default_field_name': 'sender', 'default_old_company_id': sender}"
+                        />
+                        </div>
+
+                        <label for="receiver" />
+                        <div class="o_row">
+                            <field name="receiver" nolabel="1" />
+                            <button
+                            name="%(email_parser.action_remap_company_wizard)d"
+                            type="action"
+                            string="Change"
+                            invisible="extraction_state != 'draft'"
+                            context="{'default_nomination_id': id, 'default_field_name': 'receiver', 'default_old_company_id': receiver}"
+                        />
+                        </div>
+
+                        <label for="agent" />
+                        <div class="o_row">
+                            <field name="agent" nolabel="1" />
+                            <button
+                            name="%(email_parser.action_remap_company_wizard)d"
+                            type="action"
+                            string="Change"
+                            invisible="extraction_state != 'draft'"
+                            context="{'default_nomination_id': id, 'default_field_name': 'agent', 'default_old_company_id': agent}"
+                        />
+                        </div>
+                    </group>
+                </xpath>
+            </field>
+        </record>
+
+    <!-- ── Product transfer form (override: remap buttons in draft) ────────── -->
+    <record id="view_parser_product_transfer_form_draft" model="ir.ui.view">
+        <field name="name">parser.product_transfer.form.draft</field>
+        <field name="model">parser.product_transfer</field>
+        <field name="inherit_id" ref="view_parser_product_transfer_form" />
+        <field name="arch" type="xml">
+            <xpath expr="//field[@name='source_modality']" position="replace">
+                <field name="extraction_state" invisible="1" />
+                <label for="source_modality" />
+                <div class="o_row">
+                    <field name="source_modality" nolabel="1" />
+                    <button
+                        name="%(email_parser.action_remap_modality_wizard)d"
+                        type="action"
+                        string="Change"
+                        invisible="extraction_state != 'draft'"
+                        context="{
+                            'default_product_transfer_id': id,
+                            'default_field_name': 'source_modality',
+                            'default_old_modality_id': source_modality
+                        }"
+                    />
+                </div>
+            </xpath>
+            <xpath
+                expr="//field[@name='destination_modality']"
+                position="replace"
+            >
+                <label for="destination_modality" />
+                <div class="o_row">
+                    <field name="destination_modality" nolabel="1" />
+                    <button
+                        name="%(email_parser.action_remap_modality_wizard)d"
+                        type="action"
+                        string="Change"
+                        invisible="extraction_state != 'draft'"
+                        context="{
+                            'default_product_transfer_id': id,
+                            'default_field_name': 'destination_modality',
+                            'default_old_modality_id': destination_modality
+                        }"
+                    />
+                </div>
+            </xpath>
+        </field>
+    </record>
+
 </odoo>

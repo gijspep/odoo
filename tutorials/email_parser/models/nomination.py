@@ -5,7 +5,9 @@ class Nomination(models.Model):
     _name = "parser.nomination"
     _description = "A single nomination extracted from an email"
 
-    extraction_id = fields.Many2one(comodel_name="parser.extraction", ondelete="cascade")
+    extraction_id = fields.Many2one(
+        comodel_name="parser.extraction", ondelete="cascade"
+    )
 
     references = fields.One2many(
         comodel_name="parser.reference_item",
@@ -20,8 +22,10 @@ class Nomination(models.Model):
     transporter = fields.Many2one(comodel_name="parser.company")
     receiver = fields.Many2one(comodel_name="parser.company")
     sender = fields.Many2one(comodel_name="parser.company")
-    agent = fields.Char()
+    agent = fields.Many2one(comodel_name="parser.company")
     nomination_type = fields.Char()
+
+    extraction_state = fields.Selection(related="extraction_id.state")
 
     sample_required = fields.Boolean(default=False)
     inspection_before = fields.Boolean(default=False)

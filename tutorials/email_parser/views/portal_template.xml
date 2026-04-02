@@ -73,12 +73,12 @@
                     .nav-list { list-style: none; padding: 8px 0; }
 
                     .nav-item {
-                        display: flex;
-                        align-items: center;
+                        display: block;
                         padding: 9px 20px;
                         font-size: 0.88rem;
                         color: #64748b;
                         cursor: pointer;
+                        text-decoration: none;
                         transition: color 0.12s, background 0.12s;
                         border-left: 2px solid transparent;
                         user-select: none;
@@ -112,9 +112,18 @@
                         letter-spacing: -0.01em;
                     }
 
-                    /* ── Views ── */
+                    /* ── JS-switched views (upload / instruct) ── */
                     .view { display: none; width: 100%; max-width: 600px; flex-direction: column; gap: 16px; }
                     .view.active { display: flex; }
+
+                    /* ── Static content area (extractions / nominations) ── */
+                    .content-area {
+                        width: 100%;
+                        max-width: 600px;
+                        display: flex;
+                        flex-direction: column;
+                        gap: 16px;
+                    }
 
                     /* ── Unlock / no-key cards ── */
                     .card {
@@ -249,18 +258,15 @@
 
                     .job-id { font-size: 0.72rem; color: #475569; font-family: monospace; }
 
-                    .result-btn {
-                        background: none;
-                        border: none;
+                    .result-link {
                         color: #6366f1;
                         font-size: 0.85rem;
                         font-weight: 600;
-                        cursor: pointer;
+                        text-decoration: none;
                         padding: 4px 0;
-                        text-align: left;
                     }
 
-                    .result-btn:hover { color: #a5b4fc; text-decoration: underline; }
+                    .result-link:hover { color: #a5b4fc; text-decoration: underline; }
 
                     .spinner {
                         display: inline-block;
@@ -277,17 +283,18 @@
 
                     .job-progress { display: flex; align-items: center; gap: 8px; font-size: 0.78rem; color: #64748b; }
 
-                    /* ── List views ── */
-                    .list-item {
+                    /* ── List items ── */
+                    a.list-item {
+                        display: block;
                         background: #161b27;
                         border: 1px solid #1e293b;
                         border-radius: 10px;
                         padding: 14px 18px;
-                        cursor: pointer;
+                        text-decoration: none;
                         transition: border-color 0.12s, background 0.12s;
                     }
 
-                    .list-item:hover { border-color: #334155; background: #1a2033; }
+                    a.list-item:hover { border-color: #334155; background: #1a2033; }
 
                     .list-item-title {
                         font-size: 0.88rem;
@@ -302,69 +309,25 @@
 
                     .list-empty { font-size: 0.85rem; color: #475569; padding: 24px 0; text-align: center; }
 
-                    .list-loading { font-size: 0.85rem; color: #475569; padding: 24px 0; text-align: center; display: flex; align-items: center; justify-content: center; gap: 8px; }
-
-                    /* ── Modal ── */
-                    .modal-backdrop {
-                        position: fixed;
-                        inset: 0;
-                        background: rgba(0,0,0,0.65);
-                        display: flex;
-                        align-items: flex-start;
-                        justify-content: center;
-                        padding: 48px 16px;
-                        z-index: 1000;
-                        overflow-y: auto;
+                    /* ── Back link ── */
+                    .back-link {
+                        align-self: flex-start;
+                        font-size: 0.82rem;
+                        color: #6366f1;
+                        text-decoration: none;
                     }
 
-                    .modal {
-                        background: #161b27;
-                        border: 1px solid #1e293b;
-                        border-radius: 16px;
-                        width: 100%;
-                        max-width: 680px;
-                        display: flex;
-                        flex-direction: column;
-                        overflow: hidden;
-                        flex-shrink: 0;
-                    }
+                    .back-link:hover { color: #a5b4fc; text-decoration: underline; }
 
-                    .modal-header {
-                        display: flex;
-                        align-items: flex-start;
-                        justify-content: space-between;
-                        gap: 16px;
-                        padding: 24px 28px 20px;
-                        border-bottom: 1px solid #1e293b;
-                    }
-
-                    .modal-header-text { display: flex; flex-direction: column; gap: 4px; }
-                    .modal-header-text h2 { font-size: 1rem; font-weight: 600; color: #f1f5f9; }
-                    .modal-header-text p  { font-size: 0.78rem; color: #64748b; }
-
-                    .modal-close {
-                        background: none;
-                        border: none;
-                        color: #475569;
-                        cursor: pointer;
-                        font-size: 1.2rem;
-                        line-height: 1;
-                        padding: 2px 4px;
-                        flex-shrink: 0;
-                    }
-
-                    .modal-close:hover { color: #94a3b8; }
-
-                    .modal-body { display: flex; flex-direction: column; gap: 12px; padding: 20px 28px 28px; }
-
+                    /* ── Nomination cards (native details/summary) ── */
                     .nom-card {
-                        background: #0d1117;
+                        background: #161b27;
                         border: 1px solid #1e293b;
                         border-radius: 10px;
                         overflow: hidden;
                     }
 
-                    .nom-summary {
+                    .nom-card summary {
                         display: flex;
                         align-items: center;
                         justify-content: space-between;
@@ -372,11 +335,13 @@
                         padding: 14px 16px;
                         cursor: pointer;
                         user-select: none;
+                        list-style: none;
                     }
 
-                    .nom-summary:hover { background: #111827; }
+                    .nom-card summary::-webkit-details-marker { display: none; }
+                    .nom-card summary:hover { background: #111827; }
 
-                    .nom-summary-left { display: flex; flex-direction: column; gap: 3px; }
+                    .nom-summary-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
                     .nom-ref  { font-size: 0.82rem; font-weight: 600; color: #cbd5e1; }
                     .nom-meta { font-size: 0.75rem; color: #64748b; }
 
@@ -393,17 +358,12 @@
                         flex-shrink: 0;
                     }
 
-                    .nom-chevron { color: #475569; transition: transform 0.15s; flex-shrink: 0; }
-                    .nom-card.open .nom-chevron { transform: rotate(90deg); }
-
                     .nom-detail {
-                        display: none;
                         padding: 0 16px 16px;
+                        display: flex;
                         flex-direction: column;
                         gap: 12px;
                     }
-
-                    .nom-card.open .nom-detail { display: flex; }
 
                     .detail-section { display: flex; flex-direction: column; gap: 6px; }
 
@@ -573,496 +533,587 @@
                         <nav class="sidebar">
                             <div class="sidebar-brand">Email Parser</div>
                             <ul class="nav-list">
-                                <li
-                                    class="nav-item active"
-                                    data-view="upload"
-                                >Upload</li>
-                                <li
-                                    class="nav-item"
-                                    data-view="instruct"
-                                >Instruct</li>
-                                <li
-                                    class="nav-item"
-                                    data-view="extractions"
-                                >Extractions</li>
-                                <li
-                                    class="nav-item"
-                                    data-view="nominations"
-                                >Nominations</li>
+                                <!-- Upload/Instruct: JS-driven only when on those views -->
+                                <t t-if="current_view in ('upload', 'instruct')">
+                                    <li
+                                        class="nav-item active"
+                                        data-view="upload"
+                                    >Upload</li>
+                                    <li
+                                        class="nav-item"
+                                        data-view="instruct"
+                                    >Instruct</li>
+                                </t>
+                                <t t-else="">
+                                    <li>
+                                        <a
+                                            class="nav-item"
+                                            href="/email_parser"
+                                        >Upload</a>
+                                    </li>
+                                </t>
+                                <li>
+                                    <a
+                                        t-attf-class="nav-item#{' active' if current_view in ('extractions', 'extraction') else ''}"
+                                        href="/email_parser?view=extractions"
+                                    >Extractions</a>
+                                </li>
+                                <li>
+                                    <a
+                                        t-attf-class="nav-item#{' active' if current_view in ('nominations', 'nomination') else ''}"
+                                        href="/email_parser?view=nominations"
+                                    >Nominations</a>
+                                </li>
                             </ul>
                         </nav>
 
                         <main class="main">
 
-                            <!-- Upload view -->
-                            <div id="view-upload" class="view active">
-                                <div id="drop-zone">
-                                    <svg
-                                        xmlns="http://www.w3.org/2000/svg"
-                                        fill="none"
-                                        viewBox="0 0 24 24"
-                                        stroke="currentColor"
-                                        stroke-width="1.5"
-                                    >
-                                        <path
-                                            stroke-linecap="round"
-                                            stroke-linejoin="round"
-                                            d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
-                                        />
-                                    </svg>
-                                    <p><strong>Drop .msg files here</strong><br
-                                        />or click to select</p>
-                                    <input
-                                        type="file"
-                                        id="file-input"
-                                        accept=".msg"
-                                        multiple="multiple"
-                                    />
-                                </div>
-                                <div id="jobs" />
-                            </div>
+                            <!-- ── Upload / Instruct (JS-driven) ─────────── -->
+                            <t t-if="current_view in ('upload', 'instruct')">
 
-                            <!-- Instruct view -->
-                            <div id="view-instruct" class="view">
-                                <h2 class="view-title">Instruct</h2>
-                                <div class="instruct-form">
-                                    <div>
-                                        <label
-                                            class="form-label"
-                                            for="instruct-body"
-                                        >Body Content</label>
-                                        <textarea
-                                            id="instruct-body"
-                                            class="body-input"
-                                            placeholder="Enter your instruction…"
+                                <!-- Upload view -->
+                                <div id="view-upload" class="view active">
+                                    <div id="drop-zone">
+                                        <svg
+                                            xmlns="http://www.w3.org/2000/svg"
+                                            fill="none"
+                                            viewBox="0 0 24 24"
+                                            stroke="currentColor"
+                                            stroke-width="1.5"
+                                        >
+                                            <path
+                                                stroke-linecap="round"
+                                                stroke-linejoin="round"
+                                                d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5m-13.5-9L12 3m0 0l4.5 4.5M12 3v13.5"
+                                            />
+                                        </svg>
+                                        <p><strong>Drop .msg files here</strong><br
+                                            />or click to select</p>
+                                        <input
+                                            type="file"
+                                            id="file-input"
+                                            accept=".msg"
+                                            multiple="multiple"
                                         />
                                     </div>
-                                    <div>
-                                        <label
-                                            class="form-label"
-                                        >Attachments</label>
-                                        <div
-                                            id="instruct-drop"
-                                            class="file-drop"
-                                        >
-                                            <strong
-                                            >Drop files here</strong> or click to select
-                                            <input
-                                                type="file"
-                                                id="instruct-file-input"
-                                                multiple="multiple"
+                                    <div id="jobs" />
+                                </div>
+
+                                <!-- Instruct view -->
+                                <div id="view-instruct" class="view">
+                                    <h2 class="view-title">Instruct</h2>
+                                    <div class="instruct-form">
+                                        <div>
+                                            <label
+                                                class="form-label"
+                                                for="instruct-body"
+                                            >Body Content</label>
+                                            <textarea
+                                                id="instruct-body"
+                                                class="body-input"
+                                                placeholder="Enter your instruction…"
                                             />
                                         </div>
+                                        <div>
+                                            <label class="form-label">Attachments</label>
+                                            <div
+                                                id="instruct-drop"
+                                                class="file-drop"
+                                            >
+                                                <strong>Drop files here</strong> or click to select
+                                                <input
+                                                    type="file"
+                                                    id="instruct-file-input"
+                                                    multiple="multiple"
+                                                />
+                                            </div>
+                                        </div>
+                                        <div
+                                            id="instruct-file-chips"
+                                            class="file-chips"
+                                        />
+                                        <button
+                                            id="instruct-submit"
+                                            class="btn-primary"
+                                            style="align-self:flex-start;"
+                                        >Submit</button>
                                     </div>
-                                    <div
-                                        id="instruct-file-chips"
-                                        class="file-chips"
-                                    />
-                                    <button
-                                        id="instruct-submit"
-                                        class="btn-primary"
-                                        style="align-self:flex-start;"
-                                    >Submit</button>
+                                    <div id="instruct-jobs" />
                                 </div>
-                                <div id="instruct-jobs" />
-                            </div>
 
-                            <!-- Extractions view -->
-                            <div id="view-extractions" class="view">
-                                <h2 class="view-title">Extractions</h2>
-                                <div id="extractions-content">
-                                    <div class="list-loading"><span
-                                            class="spinner"
-                                        /> Loading…</div>
-                                </div>
-                            </div>
+                                <script type="text/javascript">
+                                    <![CDATA[
+                                    const POLL_MS = 1500;
 
-                            <!-- Nominations view -->
-                            <div id="view-nominations" class="view">
-                                <h2 class="view-title">Nominations</h2>
-                                <div id="nominations-content">
-                                    <div class="list-loading"><span
-                                            class="spinner"
-                                        /> Loading…</div>
+                                    // ── Job cards ─────────────────────────
+                                    function createCard(filename, container) {
+                                        const card = document.createElement("div");
+                                        card.className = "job-card";
+                                        card.innerHTML = `
+                                            <div class="job-header">
+                                                <span class="job-filename" title="${filename}">${filename}</span>
+                                                <span class="job-status status-uploading">Uploading</span>
+                                            </div>
+                                            <div class="job-progress">
+                                                <span class="spinner"></span>
+                                                <span class="job-progress-text">Sending file…</span>
+                                            </div>`;
+                                        (container || document.getElementById("jobs")).prepend(card);
+                                        return {
+                                            setStatus(label, cls) {
+                                                const s = card.querySelector(".job-status");
+                                                s.textContent = label;
+                                                s.className = `job-status ${cls}`;
+                                            },
+                                            setProgress(text) {
+                                                card.querySelector(".job-progress-text").textContent = text;
+                                            },
+                                            setJobId(id) {
+                                                let el = card.querySelector(".job-id");
+                                                if (!el) {
+                                                    el = document.createElement("div");
+                                                    el.className = "job-id";
+                                                    card.querySelector(".job-header").after(el);
+                                                }
+                                                el.textContent = `Job: ${id}`;
+                                            },
+                                            showResult(json) {
+                                                card.querySelector(".job-progress").remove();
+                                                const link = document.createElement("a");
+                                                link.className = "result-link";
+                                                link.textContent = "View Result →";
+                                                link.href = json.extraction_id
+                                                    ? `/email_parser?view=extraction&id=${json.extraction_id}`
+                                                    : "/email_parser?view=extractions";
+                                                card.appendChild(link);
+                                            },
+                                            showError(msg) {
+                                                this.setStatus("Error", "status-error");
+                                                card.querySelector(".job-progress-text").textContent = msg;
+                                                card.querySelector(".spinner").remove();
+                                            }
+                                        };
+                                    }
+
+                                    async function processFile(file) {
+                                        const ui = createCard(file.name);
+                                        try {
+                                            const form = new FormData();
+                                            form.append("msg_file", file);
+                                            const submitResp = await fetch("/email_parser/submit", {
+                                                method: "POST",
+                                                body: form,
+                                            });
+                                            const submitData = await submitResp.json();
+                                            if (submitData.error) throw new Error(submitData.error);
+
+                                            const jobId = submitData.id;
+                                            ui.setJobId(jobId);
+                                            ui.setStatus("Pending", "status-pending");
+                                            ui.setProgress("Waiting for result…");
+
+                                            while (true) {
+                                                await new Promise(r => setTimeout(r, POLL_MS));
+                                                const pollResp = await fetch(`/email_parser/poll/${jobId}`);
+                                                const result   = await pollResp.json();
+                                                if (result.error) throw new Error(result.error);
+                                                if (result.status !== "PENDING") {
+                                                    const ok = result.status_code >= 200 && result.status_code < 300;
+                                                    ui.setStatus(result.status, ok ? "status-success" : "status-error");
+                                                    ui.showResult(result);
+                                                    return;
+                                                }
+                                            }
+                                        } catch (err) {
+                                            ui.showError(err.message);
+                                        }
+                                    }
+
+                                    // ── Navigation ────────────────────────
+                                    document.querySelectorAll(".nav-item[data-view]").forEach(navItem => {
+                                        navItem.addEventListener("click", () => {
+                                            const viewName = navItem.dataset.view;
+                                            document.querySelectorAll(".nav-item[data-view]").forEach(n => n.classList.remove("active"));
+                                            navItem.classList.add("active");
+                                            document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
+                                            document.getElementById(`view-${viewName}`).classList.add("active");
+                                        });
+                                    });
+
+                                    // ── Drop zone ─────────────────────────
+                                    const zone  = document.getElementById("drop-zone");
+                                    const input = document.getElementById("file-input");
+
+                                    zone.addEventListener("click", () => input.click());
+                                    input.addEventListener("change", () => {
+                                        [...input.files].forEach(processFile);
+                                        input.value = "";
+                                    });
+                                    zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
+                                    zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
+                                    zone.addEventListener("drop", e => {
+                                        e.preventDefault();
+                                        zone.classList.remove("drag-over");
+                                        const files = [...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith(".msg"));
+                                        if (files.length) files.forEach(processFile);
+                                    });
+
+                                    // ── Instruct view ─────────────────────
+                                    const instructDrop  = document.getElementById("instruct-drop");
+                                    const instructInput = document.getElementById("instruct-file-input");
+                                    const instructChips = document.getElementById("instruct-file-chips");
+                                    let instructFiles = [];
+
+                                    function renderChips() {
+                                        instructChips.innerHTML = instructFiles.map((f, i) => `
+                                            <span class="file-chip">${String(f.name).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}<button class="file-chip-remove" data-i="${i}">✕</button></span>
+                                        `).join("");
+                                        instructChips.querySelectorAll(".file-chip-remove").forEach(btn => {
+                                            btn.addEventListener("click", () => {
+                                                instructFiles.splice(Number(btn.dataset.i), 1);
+                                                renderChips();
+                                            });
+                                        });
+                                    }
+
+                                    instructDrop.addEventListener("click", () => instructInput.click());
+                                    instructInput.addEventListener("change", () => {
+                                        instructFiles.push(...instructInput.files);
+                                        instructInput.value = "";
+                                        renderChips();
+                                    });
+                                    instructDrop.addEventListener("dragover", e => { e.preventDefault(); instructDrop.classList.add("drag-over"); });
+                                    instructDrop.addEventListener("dragleave", () => instructDrop.classList.remove("drag-over"));
+                                    instructDrop.addEventListener("drop", e => {
+                                        e.preventDefault();
+                                        instructDrop.classList.remove("drag-over");
+                                        instructFiles.push(...e.dataTransfer.files);
+                                        renderChips();
+                                    });
+
+                                    document.getElementById("instruct-submit").addEventListener("click", async () => {
+                                        const body = document.getElementById("instruct-body").value.trim();
+                                        if (!body && instructFiles.length === 0) return;
+
+                                        const form = new FormData();
+                                        form.append("body_content", body);
+                                        instructFiles.forEach(f => form.append("attachments", f));
+
+                                        const ui = createCard("Instruction", document.getElementById("instruct-jobs"));
+                                        try {
+                                            const submitResp = await fetch("/email_parser/instruct", {
+                                                method: "POST",
+                                                body: form,
+                                            });
+                                            const submitData = await submitResp.json();
+                                            if (submitData.error) throw new Error(submitData.error);
+
+                                            const jobId = submitData.id;
+                                            ui.setJobId(jobId);
+                                            ui.setStatus("Pending", "status-pending");
+                                            ui.setProgress("Waiting for result…");
+
+                                            while (true) {
+                                                await new Promise(r => setTimeout(r, POLL_MS));
+                                                const pollResp = await fetch(`/email_parser/poll/${jobId}`);
+                                                const result   = await pollResp.json();
+                                                if (result.error) throw new Error(result.error);
+                                                if (result.status !== "PENDING") {
+                                                    const ok = result.status_code >= 200 && result.status_code < 300;
+                                                    ui.setStatus(result.status, ok ? "status-success" : "status-error");
+                                                    ui.showResult(result);
+                                                    return;
+                                                }
+                                            }
+                                        } catch (err) {
+                                            ui.showError(err.message);
+                                        }
+                                    });
+                                    ]]>
+                                </script>
+
+                            </t>
+
+                            <!-- ── Extractions list (pure QWeb) ──────────── -->
+                            <t t-elif="current_view == 'extractions'">
+                                <div class="content-area">
+                                    <h2 class="view-title">Extractions</h2>
+                                    <t t-if="not extractions">
+                                        <p class="list-empty">No extractions yet.</p>
+                                    </t>
+                                    <t t-foreach="extractions or []" t-as="ext">
+                                        <a
+                                            class="list-item"
+                                            t-attf-href="/email_parser?view=extraction&amp;id=#{ext.id}"
+                                        >
+                                            <div
+                                                class="list-item-title"
+                                                t-out="ext.subject or ext.job_id or '—'"
+                                            />
+                                            <div class="list-item-meta">
+                                                <t t-out="ext.email_from or '(no sender)'"/>
+                                                ·
+                                                <t t-out="len(ext.nominations)"/>
+                                                nomination<t t-if="len(ext.nominations) != 1">s</t>
+                                            </div>
+                                        </a>
+                                    </t>
                                 </div>
-                            </div>
+                            </t>
+
+                            <!-- ── Single extraction (pure QWeb) ─────────── -->
+                            <t t-elif="current_view == 'extraction'">
+                                <div class="content-area">
+                                    <a
+                                        class="back-link"
+                                        href="/email_parser?view=extractions"
+                                    >← Extractions</a>
+                                    <t t-if="not extraction">
+                                        <p>Extraction not found.</p>
+                                    </t>
+                                    <t t-else="">
+                                        <h2
+                                            class="view-title"
+                                            t-out="extraction.subject or extraction.job_id or '—'"
+                                        />
+                                        <p t-out="extraction.email_from or ''"/>
+                                        <t
+                                            t-foreach="extraction.nominations"
+                                            t-as="nom"
+                                        >
+                                            <details
+                                                class="nom-card"
+                                                t-att-open="'open' if len(extraction.nominations) == 1 else False"
+                                            >
+                                                <summary>
+                                                    <div class="nom-summary-left">
+                                                        <span class="nom-ref">
+                                                            <t t-if="nom.references">
+                                                                <t
+                                                                    t-foreach="nom.references"
+                                                                    t-as="ref"
+                                                                >
+                                                                    <t t-if="not ref_first">, </t>
+                                                                    <t t-out="ref.label"/>: <t t-out="ref.value"/>
+                                                                </t>
+                                                            </t>
+                                                            <t t-else="">
+                                                                #<t t-out="nom_index + 1"/>
+                                                            </t>
+                                                        </span>
+                                                        <span class="nom-meta">
+                                                            <t t-if="nom.transporter">
+                                                                <t t-out="nom.transporter.name"/>
+                                                            </t>
+                                                            <t t-if="nom.receiver">
+                                                                → <t t-out="nom.receiver.name"/>
+                                                            </t>
+                                                            <t t-if="nom.arrival_date">
+                                                                · <t t-out="str(nom.arrival_date)"/>
+                                                            </t>
+                                                        </span>
+                                                    </div>
+                                                    <span
+                                                        class="nom-badge"
+                                                        t-out="nom.nomination_type or '—'"
+                                                    />
+                                                </summary>
+                                                <t t-call="email_parser.nom_detail_tmpl">
+                                                    <t t-set="nom" t-value="nom"/>
+                                                </t>
+                                            </details>
+                                        </t>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <!-- ── Nominations list (pure QWeb) ──────────── -->
+                            <t t-elif="current_view == 'nominations'">
+                                <div class="content-area">
+                                    <h2 class="view-title">Nominations</h2>
+                                    <t t-if="not nominations">
+                                        <p class="list-empty">No nominations yet.</p>
+                                    </t>
+                                    <t t-foreach="nominations or []" t-as="nom">
+                                        <a
+                                            class="list-item"
+                                            t-attf-href="/email_parser?view=nomination&amp;id=#{nom.id}"
+                                        >
+                                            <div class="list-item-title">
+                                                <t t-if="nom.references">
+                                                    <t
+                                                        t-foreach="nom.references"
+                                                        t-as="ref"
+                                                    >
+                                                        <t t-if="not ref_first">, </t>
+                                                        <t t-out="ref.value"/>
+                                                    </t>
+                                                </t>
+                                                <t t-elif="nom.extraction_id.subject">
+                                                    <t t-out="nom.extraction_id.subject"/>
+                                                </t>
+                                                <t t-else="">—</t>
+                                            </div>
+                                            <div class="list-item-meta">
+                                                <t t-set="sep" t-value="''"/>
+                                                <t t-if="nom.nomination_type">
+                                                    <t t-out="sep"/><t t-out="nom.nomination_type"/>
+                                                    <t t-set="sep" t-value="' · '"/>
+                                                </t>
+                                                <t t-if="nom.transporter">
+                                                    <t t-out="sep"/><t t-out="nom.transporter.name"/>
+                                                    <t t-set="sep" t-value="' · '"/>
+                                                </t>
+                                                <t t-if="nom.arrival_date">
+                                                    <t t-out="sep"/><t t-out="str(nom.arrival_date)"/>
+                                                    <t t-set="sep" t-value="' · '"/>
+                                                </t>
+                                                <t t-if="not (nom.nomination_type or nom.transporter or nom.arrival_date)">—</t>
+                                            </div>
+                                        </a>
+                                    </t>
+                                </div>
+                            </t>
+
+                            <!-- ── Single nomination (pure QWeb) ─────────── -->
+                            <t t-elif="current_view == 'nomination'">
+                                <div class="content-area">
+                                    <a
+                                        class="back-link"
+                                        href="/email_parser?view=nominations"
+                                    >← Nominations</a>
+                                    <t t-if="not nomination">
+                                        <p>Nomination not found.</p>
+                                    </t>
+                                    <t t-else="">
+                                        <h2
+                                            class="view-title"
+                                            t-out="nomination.nomination_type or '—'"
+                                        />
+                                        <details class="nom-card" open="open">
+                                            <summary>
+                                                <div class="nom-summary-left">
+                                                    <span class="nom-ref">
+                                                        <t t-if="nomination.references">
+                                                            <t
+                                                                t-foreach="nomination.references"
+                                                                t-as="ref"
+                                                            >
+                                                                <t t-if="not ref_first">, </t>
+                                                                <t t-out="ref.label"/>: <t t-out="ref.value"/>
+                                                            </t>
+                                                        </t>
+                                                        <t t-else="">Details</t>
+                                                    </span>
+                                                    <span class="nom-meta">
+                                                        <t t-if="nomination.extraction_id.subject">
+                                                            <t t-out="nomination.extraction_id.subject"/>
+                                                        </t>
+                                                    </span>
+                                                </div>
+                                                <span
+                                                    class="nom-badge"
+                                                    t-out="nomination.nomination_type or '—'"
+                                                />
+                                            </summary>
+                                            <t t-call="email_parser.nom_detail_tmpl">
+                                                <t t-set="nom" t-value="nomination"/>
+                                            </t>
+                                        </details>
+                                    </t>
+                                </div>
+                            </t>
 
                         </main>
                     </div>
-
-                    <script type="text/javascript">
-                        <![CDATA[
-                        const POLL_MS = 1500;
-
-                        // ── Helpers ───────────────────────────────────────────
-                        function esc(s) {
-                            return String(s ?? "").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
-                        }
-
-                        function modalityLabel(m) {
-                            if (!m) return "—";
-                            const parts = [m.modality_type, m.identifier, m.ship_name].filter(Boolean);
-                            return parts.length ? parts.join(" / ") : "—";
-                        }
-
-                        // ── Modal ─────────────────────────────────────────────
-                        function buildNomCard(nom, index, startOpen) {
-                            const refs = nom.references || {};
-                            const refStr = Object.entries(refs).map(([k,v]) => `${k}: ${v}`).join(", ") || `#${index+1}`;
-                            const meta = [nom.transporter, nom.receiver ? `→ ${nom.receiver}` : null, nom.arrival_date ? nom.arrival_date.split("T")[0] : null].filter(Boolean).join(" · ");
-
-                            const pts = (nom.product_transfers || []).map(pt => `
-                                <tr>
-                                    <td>${esc(pt.product_name)}</td>
-                                    <td>${esc(pt.amount)} ${esc(pt.unit_of_measurement)}</td>
-                                    <td>${esc(pt.customs_type)}</td>
-                                    <td>${esc(modalityLabel(pt.source_modality))}</td>
-                                    <td>${esc(modalityLabel(pt.destination_modality))}</td>
-                                </tr>`).join("");
-
-                            const surveyFields = ["sample_required","inspection_before","inspection_after","certificate_of_analysis"];
-                            const surveyKvs = surveyFields.filter(f => nom.survey && nom.survey[f]).map(f =>
-                                `<span class="kv-key">${f.replace(/_/g," ")}</span><span class="kv-val">Yes</span>`
-                            ).join("");
-
-                            return `
-                                <div class="nom-card${startOpen ? " open" : ""}">
-                                    <div class="nom-summary">
-                                        <div class="nom-summary-left">
-                                            <span class="nom-ref">${esc(refStr)}</span>
-                                            <span class="nom-meta">${esc(meta)}</span>
-                                        </div>
-                                        <span class="nom-badge">${esc(nom.nomination_type || "—")}</span>
-                                        <span class="nom-chevron">▶</span>
-                                    </div>
-                                    <div class="nom-detail">
-                                        <div class="detail-section">
-                                            <div class="detail-section-title">Details</div>
-                                            <div class="kv-grid">
-                                                <span class="kv-key">Sender</span><span class="kv-val">${esc(nom.sender)}</span>
-                                                <span class="kv-key">Transporter</span><span class="kv-val">${esc(nom.transporter)}</span>
-                                                <span class="kv-key">Receiver</span><span class="kv-val">${esc(nom.receiver)}</span>
-                                                <span class="kv-key">Arrival</span><span class="kv-val">${esc((nom.arrival_date||"").split("T")[0])}</span>
-                                                ${nom.agent ? `<span class="kv-key">Agent</span><span class="kv-val">${esc(nom.agent)}</span>` : ""}
-                                            </div>
-                                        </div>
-                                        ${pts ? `
-                                        <div class="detail-section">
-                                            <div class="detail-section-title">Product Transfers</div>
-                                            <table class="pt-table">
-                                                <thead><tr>
-                                                    <th>Product</th><th>Amount</th><th>Customs</th><th>From</th><th>To</th>
-                                                </tr></thead>
-                                                <tbody>${pts}</tbody>
-                                            </table>
-                                        </div>` : ""}
-                                        ${surveyKvs ? `
-                                        <div class="detail-section">
-                                            <div class="detail-section-title">Survey</div>
-                                            <div class="kv-grid">${surveyKvs}</div>
-                                        </div>` : ""}
-                                    </div>
-                                </div>`;
-                        }
-
-                        function openModal(json) {
-                            const data = (json.result || {}).data || {};
-                            const nominations = data.nominations || [];
-                            const subject = data.subject || json.id || "";
-                            const from = data.from || "";
-
-                            const nomHtml = nominations.map((n, i) =>
-                                buildNomCard(n, i, nominations.length === 1)
-                            ).join("");
-
-                            const backdrop = document.createElement("div");
-                            backdrop.className = "modal-backdrop";
-                            backdrop.innerHTML = `
-                                <div class="modal" role="dialog" aria-modal="true">
-                                    <div class="modal-header">
-                                        <div class="modal-header-text">
-                                            <h2>${esc(subject)}</h2>
-                                            <p>${esc(from)}</p>
-                                        </div>
-                                        <button class="modal-close" aria-label="Close">✕</button>
-                                    </div>
-                                    <div class="modal-body">${nomHtml}</div>
-                                </div>`;
-
-                            backdrop.querySelector(".modal-close").addEventListener("click", () => backdrop.remove());
-                            backdrop.addEventListener("click", e => { if (e.target === backdrop) backdrop.remove(); });
-                            backdrop.querySelectorAll(".nom-summary").forEach(el => {
-                                el.addEventListener("click", () => el.closest(".nom-card").classList.toggle("open"));
-                            });
-
-                            document.body.appendChild(backdrop);
-                        }
-
-                        // ── Job cards ─────────────────────────────────────────
-                        function createCard(filename, container) {
-                            const card = document.createElement("div");
-                            card.className = "job-card";
-                            card.innerHTML = `
-                                <div class="job-header">
-                                    <span class="job-filename" title="${filename}">${filename}</span>
-                                    <span class="job-status status-uploading">Uploading</span>
-                                </div>
-                                <div class="job-progress">
-                                    <span class="spinner"></span>
-                                    <span class="job-progress-text">Sending file…</span>
-                                </div>`;
-                            (container || document.getElementById("jobs")).prepend(card);
-                            return {
-                                setStatus(label, cls) {
-                                    const s = card.querySelector(".job-status");
-                                    s.textContent = label;
-                                    s.className = `job-status ${cls}`;
-                                },
-                                setProgress(text) {
-                                    card.querySelector(".job-progress-text").textContent = text;
-                                },
-                                setJobId(id) {
-                                    let el = card.querySelector(".job-id");
-                                    if (!el) {
-                                        el = document.createElement("div");
-                                        el.className = "job-id";
-                                        card.querySelector(".job-header").after(el);
-                                    }
-                                    el.textContent = `Job: ${id}`;
-                                },
-                                showResult(json) {
-                                    card.querySelector(".job-progress").remove();
-                                    // Invalidate list caches so next visit shows fresh data
-                                    delete listCache.extractions;
-                                    delete listCache.nominations;
-                                    const btn = document.createElement("button");
-                                    btn.className = "result-btn";
-                                    btn.textContent = "View Result →";
-                                    btn.addEventListener("click", () => openModal(json));
-                                    card.appendChild(btn);
-                                },
-                                showError(msg) {
-                                    this.setStatus("Error", "status-error");
-                                    card.querySelector(".job-progress-text").textContent = msg;
-                                    card.querySelector(".spinner").remove();
-                                }
-                            };
-                        }
-
-                        async function processFile(file) {
-                            const ui = createCard(file.name);
-                            try {
-                                const form = new FormData();
-                                form.append("msg_file", file);
-                                const submitResp = await fetch("/email_parser/submit", {
-                                    method: "POST",
-                                    body: form,
-                                });
-                                const submitData = await submitResp.json();
-                                if (submitData.error) throw new Error(submitData.error);
-
-                                const jobId = submitData.id;
-                                ui.setJobId(jobId);
-                                ui.setStatus("Pending", "status-pending");
-                                ui.setProgress("Waiting for result…");
-
-                                while (true) {
-                                    await new Promise(r => setTimeout(r, POLL_MS));
-                                    const pollResp = await fetch(`/email_parser/poll/${jobId}`);
-                                    const result   = await pollResp.json();
-                                    if (result.error) throw new Error(result.error);
-                                    if (result.status !== "PENDING") {
-                                        const ok = result.status_code >= 200 && result.status_code < 300;
-                                        ui.setStatus(result.status, ok ? "status-success" : "status-error");
-                                        ui.showResult(result);
-                                        return;
-                                    }
-                                }
-                            } catch (err) {
-                                ui.showError(err.message);
-                            }
-                        }
-
-                        // ── List views ────────────────────────────────────────
-                        const listCache = {};
-
-                        async function loadExtractions() {
-                            if (listCache.extractions) { renderExtractions(listCache.extractions); return; }
-                            const el = document.getElementById("extractions-content");
-                            el.innerHTML = '<div class="list-loading"><span class="spinner"></span> Loading…</div>';
-                            try {
-                                const resp = await fetch("/email_parser/api/extractions");
-                                const data = await resp.json();
-                                listCache.extractions = data;
-                                renderExtractions(data);
-                            } catch {
-                                el.innerHTML = '<p class="list-empty">Failed to load extractions.</p>';
-                            }
-                        }
-
-                        function renderExtractions(items) {
-                            const el = document.getElementById("extractions-content");
-                            if (!items.length) {
-                                el.innerHTML = '<p class="list-empty">No extractions yet.</p>';
-                                return;
-                            }
-                            el.innerHTML = items.map(e => `
-                                <div class="list-item" data-id="${e.id}">
-                                    <div class="list-item-title">${esc(e.subject || e.job_id || "—")}</div>
-                                    <div class="list-item-meta">${esc(e.email_from)} · ${e.nomination_count} nomination${e.nomination_count !== 1 ? "s" : ""}</div>
-                                </div>`).join("");
-                            el.querySelectorAll(".list-item").forEach(item => {
-                                item.addEventListener("click", async () => {
-                                    const resp = await fetch(`/email_parser/api/extraction/${item.dataset.id}`);
-                                    const json = await resp.json();
-                                    openModal(json);
-                                });
-                            });
-                        }
-
-                        async function loadNominations() {
-                            if (listCache.nominations) { renderNominations(listCache.nominations); return; }
-                            const el = document.getElementById("nominations-content");
-                            el.innerHTML = '<div class="list-loading"><span class="spinner"></span> Loading…</div>';
-                            try {
-                                const resp = await fetch("/email_parser/api/nominations");
-                                const data = await resp.json();
-                                listCache.nominations = data;
-                                renderNominations(data);
-                            } catch {
-                                el.innerHTML = '<p class="list-empty">Failed to load nominations.</p>';
-                            }
-                        }
-
-                        function renderNominations(items) {
-                            const el = document.getElementById("nominations-content");
-                            if (!items.length) {
-                                el.innerHTML = '<p class="list-empty">No nominations yet.</p>';
-                                return;
-                            }
-                            el.innerHTML = items.map(n => {
-                                const refStr = Object.entries(n.references || {}).map(([k,v]) => `${v}`).join(", ") || "—";
-                                const meta = [n.nomination_type, n.transporter, n.arrival_date].filter(Boolean).join(" · ");
-                                return `<div class="list-item" data-id="${n.id}">
-                                    <div class="list-item-title">${esc(refStr)}${n.subject ? ` — ${esc(n.subject)}` : ""}</div>
-                                    <div class="list-item-meta">${esc(meta)}</div>
-                                </div>`;
-                            }).join("");
-                            el.querySelectorAll(".list-item").forEach(item => {
-                                item.addEventListener("click", async () => {
-                                    const resp = await fetch(`/email_parser/api/nomination/${item.dataset.id}`);
-                                    const json = await resp.json();
-                                    openModal(json);
-                                });
-                            });
-                        }
-
-                        // ── Navigation ────────────────────────────────────────
-                        document.querySelectorAll(".nav-item").forEach(navItem => {
-                            navItem.addEventListener("click", () => {
-                                const viewName = navItem.dataset.view;
-                                document.querySelectorAll(".nav-item").forEach(n => n.classList.remove("active"));
-                                navItem.classList.add("active");
-                                document.querySelectorAll(".view").forEach(v => v.classList.remove("active"));
-                                document.getElementById(`view-${viewName}`).classList.add("active");
-                                if (viewName === "extractions") loadExtractions();
-                                else if (viewName === "nominations") loadNominations();
-                            });
-                        });
-
-                        // ── Drop zone ─────────────────────────────────────────
-                        const zone  = document.getElementById("drop-zone");
-                        const input = document.getElementById("file-input");
-
-                        zone.addEventListener("click", () => input.click());
-                        input.addEventListener("change", () => {
-                            [...input.files].forEach(processFile);
-                            input.value = "";
-                        });
-                        zone.addEventListener("dragover", e => { e.preventDefault(); zone.classList.add("drag-over"); });
-                        zone.addEventListener("dragleave", () => zone.classList.remove("drag-over"));
-                        zone.addEventListener("drop", e => {
-                            e.preventDefault();
-                            zone.classList.remove("drag-over");
-                            const files = [...e.dataTransfer.files].filter(f => f.name.toLowerCase().endsWith(".msg"));
-                            if (files.length) files.forEach(processFile);
-                        });
-
-                        // ── Instruct view ─────────────────────────────────────
-                        const instructDrop  = document.getElementById("instruct-drop");
-                        const instructInput = document.getElementById("instruct-file-input");
-                        const instructChips = document.getElementById("instruct-file-chips");
-                        let instructFiles = [];
-
-                        function renderChips() {
-                            instructChips.innerHTML = instructFiles.map((f, i) => `
-                                <span class="file-chip">${esc(f.name)}<button class="file-chip-remove" data-i="${i}">✕</button></span>
-                            `).join("");
-                            instructChips.querySelectorAll(".file-chip-remove").forEach(btn => {
-                                btn.addEventListener("click", () => {
-                                    instructFiles.splice(Number(btn.dataset.i), 1);
-                                    renderChips();
-                                });
-                            });
-                        }
-
-                        instructDrop.addEventListener("click", () => instructInput.click());
-                        instructInput.addEventListener("change", () => {
-                            instructFiles.push(...instructInput.files);
-                            instructInput.value = "";
-                            renderChips();
-                        });
-                        instructDrop.addEventListener("dragover", e => { e.preventDefault(); instructDrop.classList.add("drag-over"); });
-                        instructDrop.addEventListener("dragleave", () => instructDrop.classList.remove("drag-over"));
-                        instructDrop.addEventListener("drop", e => {
-                            e.preventDefault();
-                            instructDrop.classList.remove("drag-over");
-                            instructFiles.push(...e.dataTransfer.files);
-                            renderChips();
-                        });
-
-                        document.getElementById("instruct-submit").addEventListener("click", async () => {
-                            const body = document.getElementById("instruct-body").value.trim();
-                            if (!body && instructFiles.length === 0) return;
-
-                            const form = new FormData();
-                            form.append("body_content", body);
-                            instructFiles.forEach(f => form.append("attachments", f));
-
-                            const ui = createCard("Instruction", document.getElementById("instruct-jobs"));
-                            try {
-                                const submitResp = await fetch("/email_parser/instruct", {
-                                    method: "POST",
-                                    body: form,
-                                });
-                                const submitData = await submitResp.json();
-                                if (submitData.error) throw new Error(submitData.error);
-
-                                const jobId = submitData.id;
-                                ui.setJobId(jobId);
-                                ui.setStatus("Pending", "status-pending");
-                                ui.setProgress("Waiting for result…");
-
-                                while (true) {
-                                    await new Promise(r => setTimeout(r, POLL_MS));
-                                    const pollResp = await fetch(`/email_parser/poll/${jobId}`);
-                                    const result   = await pollResp.json();
-                                    if (result.error) throw new Error(result.error);
-                                    if (result.status !== "PENDING") {
-                                        const ok = result.status_code >= 200 && result.status_code < 300;
-                                        ui.setStatus(result.status, ok ? "status-success" : "status-error");
-                                        ui.showResult(result);
-                                        return;
-                                    }
-                                }
-                            } catch (err) {
-                                ui.showError(err.message);
-                            }
-                        });
-                        ]]>
-                    </script>
                 </t>
             </body>
         </html>
     </template>
+
+    <!-- ── Nomination detail body (reused in extraction + nomination views) ── -->
+    <template id="nom_detail_tmpl">
+        <div class="nom-detail">
+            <div class="detail-section">
+                <div class="detail-section-title">Details</div>
+                <div class="kv-grid">
+                    <t t-if="nom.sender">
+                        <span class="kv-key">Sender</span>
+                        <span class="kv-val" t-out="nom.sender.name"/>
+                    </t>
+                    <t t-if="nom.transporter">
+                        <span class="kv-key">Transporter</span>
+                        <span class="kv-val" t-out="nom.transporter.name"/>
+                    </t>
+                    <t t-if="nom.receiver">
+                        <span class="kv-key">Receiver</span>
+                        <span class="kv-val" t-out="nom.receiver.name"/>
+                    </t>
+                    <t t-if="nom.arrival_date">
+                        <span class="kv-key">Arrival</span>
+                        <span class="kv-val" t-out="str(nom.arrival_date)"/>
+                    </t>
+                    <t t-if="nom.agent">
+                        <span class="kv-key">Agent</span>
+                        <span class="kv-val" t-out="nom.agent"/>
+                    </t>
+                </div>
+            </div>
+            <t t-if="nom.product_transfers">
+                <div class="detail-section">
+                    <div class="detail-section-title">Product Transfers</div>
+                    <table class="pt-table">
+                        <thead>
+                            <tr>
+                                <th>Product</th>
+                                <th>Amount</th>
+                                <th>Customs</th>
+                                <th>From</th>
+                                <th>To</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <t t-foreach="nom.product_transfers" t-as="pt">
+                                <tr>
+                                    <td t-out="pt.product_name"/>
+                                    <td>
+                                        <t t-out="pt.amount"/>
+                                        <t t-out="' ' + pt.unit_of_measurement if pt.unit_of_measurement else ''"/>
+                                    </td>
+                                    <td t-out="pt.customs_type or '—'"/>
+                                    <td t-out="pt.source_modality.label or '—'"/>
+                                    <td t-out="pt.destination_modality.label or '—'"/>
+                                </tr>
+                            </t>
+                        </tbody>
+                    </table>
+                </div>
+            </t>
+            <t t-if="nom.sample_required or nom.inspection_before or nom.inspection_after or nom.certificate_of_analysis">
+                <div class="detail-section">
+                    <div class="detail-section-title">Survey</div>
+                    <div class="kv-grid">
+                        <t t-if="nom.sample_required">
+                            <span class="kv-key">sample required</span>
+                            <span class="kv-val">Yes</span>
+                        </t>
+                        <t t-if="nom.inspection_before">
+                            <span class="kv-key">inspection before</span>
+                            <span class="kv-val">Yes</span>
+                        </t>
+                        <t t-if="nom.inspection_after">
+                            <span class="kv-key">inspection after</span>
+                            <span class="kv-val">Yes</span>
+                        </t>
+                        <t t-if="nom.certificate_of_analysis">
+                            <span class="kv-key">certificate of analysis</span>
+                            <span class="kv-val">Yes</span>
+                        </t>
+                    </div>
+                </div>
+            </t>
+        </div>
+    </template>
+
 </odoo>
